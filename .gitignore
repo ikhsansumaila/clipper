@@ -1,0 +1,18 @@
+# --- Sensitif & Rahasia ---
+cookies.txt
+*.env
+
+# --- Data Output & Cache ---
+# Jangan upload hasil video/audio/transkrip agar repo tetap ringan
+/output/*
+!/output/.gitkeep  # Opsional: biar folder 'output' tetap ada di git
+
+# --- Folder Database/Data Docker ---
+# n8n_data berisi database SQLite dan data internal n8n, jangan di-upload!
+/n8n_data/
+
+# --- Environment & Log ---
+__pycache__/
+*.pyc
+.DS_Store
+*.log

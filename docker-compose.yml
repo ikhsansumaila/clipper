@@ -1,0 +1,37 @@
+services:
+  n8n_clipper:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: n8n_clipper
+    restart: always
+    ports:
+      - "5678:5678"
+    env_file:
+      - .env  # <--- TAMBAHKAN BARIS INI
+    environment:
+      - N8N_HOST=${N8N_HOST}          # Sesuaikan domain Anda
+      - N8N_PORT=${N8N_PORT}
+      - N8N_PROTOCOL=https
+      - NODE_ENV=production
+      - WEBHOOK_URL=${WEBHOOK_URL} # Sesuaikan domain Anda
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - N8N_SECURE_COOKIE=false
+      - N8N_COMMUNITY_PACKAGES_ENABLED=true
+    volumes:
+      - ./n8n_data:/home/node/.n8n
+      # Kita HANYA me-mount folder skrip untuk simpan output jika diperlukan nanti
+      - ./scripts:/home/node/scripts
+
+  discord-bridge:
+    image: node:20-alpine
+    container_name: discord_bridge
+    restart: always
+    env_file:
+      - .env  # <--- TAMBAHKAN BARIS INI
+    volumes:
+      - ./scripts:/app
+    working_dir: /app
+    command: sh -c "npm install discord.js axios && node bridge.js"
+    environment:
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL}
+      #- N8N_WEBHOOK_URL=https://clipper.mihankids.my.id/webhook/cf27362c-eaaa-44f0-aee4-064b126ed64b

@@ -2,6 +2,9 @@
 cookies.txt
 *.env
 
+# Mengabaikan folder node_modules hanya di dalam folder scripts
+/scripts/node_modules/
+
 # --- Data Output & Cache ---
 # Jangan upload hasil video/audio/transkrip agar repo tetap ringan
 /output/*

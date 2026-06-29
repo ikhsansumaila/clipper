@@ -1,8 +1,8 @@
 import json
 import subprocess
 
-VIDEO_PATH = "/home/ubuntu/clipper/output/temp/video.mp4"
-SHORTS_PATH = "/home/ubuntu/clipper/output/temp/shorts.mp4"
+VIDEO_PATH = "/home/ubuntu/clipper/output/temp/source.mp4"
+FINAL_CUT_PATH = "/home/ubuntu/clipper/output/temp/final-cut.mp4"
 JSON_PATH = "/home/ubuntu/clipper/output/temp/cut.json"
 
 with open(JSON_PATH, "r", encoding="utf-8") as f:
@@ -11,17 +11,30 @@ with open(JSON_PATH, "r", encoding="utf-8") as f:
 start_time = str(data["start"])
 end_time = str(data["end"])
 
+# Efek blur diringankan sedikit (15:15) agar CPU tidak ngos-ngosan
+blur_filter = (
+    "split[original][copy];"
+    "[copy]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=15:15[blurred];"
+    "[original]scale=1080:-1[fg];"
+    "[blurred][fg]overlay=(W-w)/2:(H-h)/2"
+)
+
 ffmpeg_cmd = [
     "ffmpeg", "-y",
-    "-i", VIDEO_PATH,
     "-ss", start_time,
     "-to", end_time,
-    "-vf", "crop=ih*(9/16):ih", 
+    "-i", VIDEO_PATH,
+    "-vf", blur_filter,
     "-c:v", "libx264",
-    "-preset", "fast",
+    "-preset", "ultrafast", # GIGI LIMA: Memaksa FFmpeg merender secepat mungkin
     "-c:a", "copy",
-    SHORTS_PATH
+    FINAL_CUT_PATH
 ]
 
-# Eksekusi FFmpeg
-subprocess.run(ffmpeg_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+print(f"Memotong video dari detik {start_time} ke {end_time} dengan kecepatan Turbo...")
+
+try:
+    subprocess.run(ffmpeg_cmd, check=True)
+    print("✅ Video Shorts berhasil dibuat dengan cepat!")
+except subprocess.CalledProcessError as e:
+    print(f"❌ Terjadi kesalahan saat memotong video: {e}")

@@ -38,7 +38,7 @@ with open("/home/ubuntu/clipper/output/temp/subs.srt", "w") as f:
 
 # 4. Burn subtitle ke video
 cmd = (
-    "ffmpeg -y -i /home/ubuntu/clipper/output/temp/shorts.mp4 "
+    "ffmpeg -y -i /home/ubuntu/clipper/output/temp/final-cut.mp4 "
     "-vf \"subtitles=/home/ubuntu/clipper/output/temp/subs.srt:force_style='Fontsize=12,PrimaryColour=&H00FFFF&'\" "
     "-c:a copy /home/ubuntu/clipper/output/final_video.mp4"
 )

@@ -4,7 +4,7 @@ import subprocess
 
 API_ENDPOINT = "http://localhost:20128/v1/chat/completions"
 API_KEY = "sk-146e5da1add4eb5b-aj2sg2-3a043914"
-AI_MODEL_NAME = "ag-x-openai"
+AI_MODEL_NAME = "mihan-high-providers"
 TXT_PATH = "/home/ubuntu/clipper/output/temp/transcript.txt"
 JSON_PATH = "/home/ubuntu/clipper/output/temp/cut.json"
 
@@ -62,25 +62,3 @@ try:
 except Exception as e:
     print(f"❌ Error saat curl atau parsing: {e}")
     print(f"Respon mentah: {result.stdout}")
-
-# # Proses request ke OpenRouter
-# response = client.chat.completions.create(
-#     model="ag-x-openai",
-#     messages=[{"role": "user", "content": prompt}],
-#     temperature=0.7,
-#     # Header opsional tapi disarankan oleh OpenRouter
-#     # extra_headers={
-#     #     "HTTP-Referer": "http://9router.mihankids.my.id/v1", # Bisa diisi domain bebas
-#     #     "X-Title": "Auto Clipper Bot", 
-#     # }
-# )
-
-# raw_json = response.choices[0].message.content.replace('```json', '').replace('```', '').strip()
-
-# try:
-#     parsed = json.loads(raw_json)
-#     with open(JSON_PATH, "w", encoding="utf-8") as f:
-#         json.dump(parsed, f, indent=4)
-#     print(f"✅ Analisis AI selesai! Rencana potong: {parsed['start']}s sampai {parsed['end']}s")
-# except Exception as e:
-#     print(f"❌ ERROR: AI tidak membalas dengan format JSON yang benar. Detail: {e}")

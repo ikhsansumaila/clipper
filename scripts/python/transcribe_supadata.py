@@ -8,8 +8,7 @@ from checkpoint_manager import CheckpointManager
 # ==========================================
 # KONFIGURASI & PATHS
 # ==========================================
-API_KEY = "sd_010859a0b0320f84f3eb76e05124a0ce"
-# os.getenv("SUPADATA_API_KEY", "")
+API_KEY = os.getenv("SUPADATA_API_KEY", "")
 BASE_URL = "https://api.supadata.ai/v1"
 TXT_PATH = "/home/ubuntu/clipper/output/temp/transcript.txt"
 URL_FILE_PATH = "/home/ubuntu/clipper/output/temp/video_url.txt"
@@ -127,15 +126,15 @@ if __name__ == "__main__":
         cm.initialize(url=current_url)
 
         # 3. UPDATE STATUS STAGE 1 (DOWNLOAD VIA n8n)
-        if not cm.is_completed("1_download"):
-            print("[1_download] Video sudah di-download oleh n8n. Mencatat ke Checkpoint...")
-            cm.update_stage("1_download", "completed", method="n8n_wget")
+        if not cm.is_completed(CheckpointManager.STAGE_DOWNLOAD):
+            print(f"[{CheckpointManager.STAGE_DOWNLOAD}] Video sudah di-download oleh n8n. Mencatat ke Checkpoint...")
+            cm.update_stage(CheckpointManager.STAGE_DOWNLOAD, "completed", method="n8n_wget")
             
             # Catat juga lokasi file video asli
             cm.update_path("source_video", "/home/ubuntu/clipper/output/temp/source.mp4")
 
         # 4. JALANKAN PROSES TRANSKRIP
-        cm.run_stage("2_transcribe", transcribe_supadata)
+        cm.run_stage(CheckpointManager.STAGE_TRANSCRIBE, transcribe_supadata)
 
     except Exception as e:
         print(f"❌ Error: {e}", file=sys.stderr)

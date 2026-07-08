@@ -23,9 +23,11 @@ def cut_video():
         raise FileNotFoundError(f"Video sumber tidak ditemukan di: {source_video}")
 
     # Ambil start_time dan end_time hasil AI dari tahap 3
-    director_data = state.get("stages", {}).get("3_director_analysis", {})
-    start_time = director_data.get("start_time")
-    end_time = director_data.get("end_time")
+    director_data = state.get("stages", {}).get(CheckpointManager.STAGE_DIRECTOR_ANALYSIS, {})
+    start_time = director_data.get("start")
+    end_time = director_data.get("end")
+
+    print(f"Data dari tahap sebelumnya:\n   Video sumber: {source_video}\n   Director Data : {director_data}\n Start time: {start_time}\n   End time: {end_time}")
 
     if start_time is None or end_time is None:
         raise ValueError("Data start_time atau end_time dari AI belum tersedia di JSON!")
@@ -46,8 +48,8 @@ def cut_video():
     ffmpeg_cmd = [
         "ffmpeg",
         "-y",
-        "-ss", start_time,
-        "-to", end_time,
+        "-ss", str(start_time),
+        "-to", str(end_time),
         "-i", source_video,
         "-vf", blur_filter,
         "-c:v", "libx264",
@@ -70,7 +72,7 @@ def cut_video():
 if __name__ == "__main__":
     try:
         cm = CheckpointManager()
-        cm.run_stage("4_cut_video", cut_video)
+        cm.run_stage(CheckpointManager.STAGE_CUT_VIDEO, cut_video)
     except Exception as e:
         print(f"❌ Error: {e}", file=sys.stderr)
         sys.exit(1)

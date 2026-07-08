@@ -68,16 +68,16 @@ if __name__ == "__main__":
     try:
         cm = CheckpointManager()
         # Jalankan stage terakhir
-        success = cm.run_stage("5_add_caption", add_caption)
+        success = cm.run_stage(CheckpointManager.STAGE_ADD_CAPTION, add_caption)
         
-        # JIKA SEMUA STAGE SUKSES, RESET CHECKPOINT-NYA
-        if success:
-            print("🎉 Semua proses selesai! Membersihkan file checkpoint...")
-            cm.reset()
+        # # JIKA SEMUA STAGE SUKSES, RESET CHECKPOINT-NYA
+        # if success:
+        #     print("🎉 Semua proses selesai! Membersihkan file checkpoint...")
+        #     cm.reset()
             
-            # Opsi Tambahan: Kamu juga bisa menambahkan kode di sini untuk 
-            # menghapus file-file temporary lain (seperti source.mp4, audio.wav) 
-            # agar hardisk server kamu tidak penuh.
+        #     # Opsi Tambahan: Kamu juga bisa menambahkan kode di sini untuk 
+        #     # menghapus file-file temporary lain (seperti source.mp4, audio.wav) 
+        #     # agar hardisk server kamu tidak penuh.
 
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)

@@ -4,6 +4,22 @@ import sys
 import tempfile
 
 class CheckpointManager:
+    STAGE_DOWNLOAD = "1_download"
+    STAGE_TRANSCRIBE = "2_transcribe"
+    STAGE_DIRECTOR_ANALYSIS = "3_director_analysis"
+    STAGE_CUT_VIDEO = "4_cut_video"
+    STAGE_ADD_CAPTION = "5_add_caption"
+
+    STAGES = [
+        STAGE_DOWNLOAD,
+        STAGE_TRANSCRIBE,
+        STAGE_DIRECTOR_ANALYSIS,
+        STAGE_CUT_VIDEO,
+        STAGE_ADD_CAPTION,
+    ]
+
+    LAST_STAGE = STAGE_ADD_CAPTION
+
     def __init__(self, filepath="/home/ubuntu/clipper/output/temp/state.json"):
         self.filepath = filepath
         self.dirpath = os.path.dirname(filepath)
@@ -38,6 +54,11 @@ class CheckpointManager:
                 print(f"⚠️ URL baru terdeteksi!\n   Lama: {saved_url}\n   Baru: {url}")
                 print("🔄 Mereset file state.json secara otomatis...")
                 data = None  # Mengubah data menjadi None akan memicu pembuatan ulang di bawah
+            elif saved_url and url and saved_url == url:
+                # Cek jika stage terakhir sudah selesai
+                if data.get("stages", {}).get(self.LAST_STAGE, {}).get("status") == "completed":
+                    print("🔄 Proses untuk URL ini sudah selesai sepenuhnya. Mereset file state.json untuk memulai ulang...")
+                    data = None
             elif not saved_url and url:
                 # Jika URL lama kosong (mungkin file corrupt), reset juga
                 data = None
@@ -50,11 +71,8 @@ class CheckpointManager:
                 "global_status": "in_progress",
                 "paths": {},
                 "stages": {
-                    "1_download": {"status": "pending"},
-                    "2_transcribe": {"status": "pending"},
-                    "3_director_analysis": {"status": "pending"},
-                    "4_cut_video": {"status": "pending"},
-                    "5_add_caption": {"status": "pending"}
+                    stage_name: {"status": "pending"}
+                    for stage_name in self.STAGES
                 }
             }
             self._write_data(data)

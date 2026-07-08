@@ -2,18 +2,25 @@ import json
 import os
 import subprocess
 import sys
+from checkpoint_manager import CheckpointManager
 
 API_KEY = os.getenv("MIHAKIDS_AI_API_KEY", "")
 API_ENDPOINT = "http://localhost:20128/v1/chat/completions"
 AI_MODEL_NAME = "mihan-high-providers"
-TXT_PATH = "/home/ubuntu/clipper/output/temp/transcript.txt"
+# TXT_PATH = "/home/ubuntu/clipper/output/temp/transcript.txt"
 JSON_PATH = "/home/ubuntu/clipper/output/temp/director-cut.json"
 
 
 def director():
+    cm = CheckpointManager()
+    state = cm.get_state()
+    
+    # Ambil lokasi file transkrip dari tahapan sebelumnya
+    transcript_path = state["paths"].get("transcript")
+
     # 1. Membaca transkrip
     print("Membaca transkrip dan menghubungi mihankids AI...")
-    with open(TXT_PATH, "r", encoding="utf-8") as f:
+    with open(transcript_path, "r", encoding="utf-8") as f:
         transcript = f.read()
 
     prompt = f"""
@@ -62,10 +69,23 @@ def director():
 
     print("✅ Sukses! Hasil disimpan ke director-cut.json")
 
+    # Mengubah teks JSON bersih menjadi dictionary Python
+    ai_result = json.loads(clean_json)
+
+    # (Opsional tapi sangat disarankan) 
+    # Menambahkan lokasi file director-cut.json ke dalam Checkpoint paths
+    ai_result["paths"] = {
+        "director_cut": JSON_PATH
+    }
+
+    # Return hasil analisis AI agar otomatis masuk ke Checkpoint JSON
+    return ai_result
+
 
 if __name__ == "__main__":
     try:
-        director()
+        cm = CheckpointManager()
+        cm.run_stage("3_director_analysis", director)
     except Exception as e:
         print(f"❌ Error: {e}", file=sys.stderr)
         sys.exit(1)

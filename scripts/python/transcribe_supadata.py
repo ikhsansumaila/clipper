@@ -91,7 +91,8 @@ def transcribe_supadata():
     print("✅ Data lirik berhasil diambil. Menyusun file txt...")
     with open(TXT_PATH, "w", encoding="utf-8") as f:
         for chunk in content_list:
-            text = chunk.get("text", "").strip()
+            # Hapus karakter enter (\n dan \r) dan ganti dengan spasi
+            text = chunk.get("text", "").replace("\n", " ").replace("\r", " ").strip()
             offset_ms = chunk.get("offset", 0)
             duration_ms = chunk.get("duration", 0)
             

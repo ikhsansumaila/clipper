@@ -57,8 +57,12 @@ class CheckpointManager:
             elif saved_url and url and saved_url == url:
                 # Cek jika stage terakhir sudah selesai
                 if data.get("stages", {}).get(self.LAST_STAGE, {}).get("status") == "completed":
-                    print("🔄 Proses untuk URL ini sudah selesai sepenuhnya. Mereset file state.json untuk memulai ulang...")
-                    data = None
+                    print("🔄 Proses untuk URL ini sudah selesai sepenuhnya. Mereset stage mulai dari 3_director_analysis...")
+                    if "stages" not in data:
+                        data["stages"] = {}
+                    for stage in [self.STAGE_DIRECTOR_ANALYSIS, self.STAGE_CUT_VIDEO, self.STAGE_ADD_CAPTION]:
+                        data["stages"][stage] = {"status": "pending"}
+                    self._write_data(data)
             elif not saved_url and url:
                 # Jika URL lama kosong (mungkin file corrupt), reset juga
                 data = None

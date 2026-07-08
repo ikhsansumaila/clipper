@@ -29,9 +29,11 @@ def director():
 
     Anda adalah produser video Shorts dan TikTok profesional yang ahli dalam mencari momen viral dari sebuah percakapan.
     1. Analisis transkrip tersebut dan cari 1 momen atau kutipan yang paling menarik, emosional, kontroversial, atau memiliki potensi viral paling tinggi.
-    2. Batasi durasi potongan video antara 30 hingga 59 detik.
-    3. Berikan judul potongan video yang menarik dan relevan dengan momen tersebut.
-    3. Wajib balas HANYA dengan format JSON murni tanpa markdown, Berikut adalah contoh struktur data transkrip beserta timestamp detiknya:
+    2. Jangan mencari momen yang terlalu panjang, pilihlah momen yang singkat namun impactful.
+    3. Jangan potong momen dengan ending yang tidak natural, pastikan momen tersebut memiliki awal dan akhir yang jelas.
+    4. Batasi durasi potongan video antara 1 hingga 3 menit.
+    5. Berikan judul potongan video yang menarik dan relevan dengan momen tersebut.
+    6. Wajib balas HANYA dengan format JSON murni tanpa markdown, Berikut adalah contoh struktur data transkrip beserta timestamp detiknya:
     {{"start": 12.5, "end": 45.0, "reason": "Karena bagian ini lucunya natural", "title": "Momen Lucu yang Bikin Ngakak"}}
     """
 

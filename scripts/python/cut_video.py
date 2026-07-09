@@ -2,11 +2,8 @@ import json
 import os
 import subprocess
 import sys
+import config
 from checkpoint_manager import CheckpointManager
-
-# VIDEO_PATH = "/home/ubuntu/clipper/output/temp/source.mp4"
-FINAL_CUT_PATH = "/home/ubuntu/clipper/output/temp/final-cut.mp4"
-# JSON_PATH = "/home/ubuntu/clipper/output/temp/director-cut.json"
 
 
 def cut_video():
@@ -23,7 +20,7 @@ def cut_video():
         raise FileNotFoundError(f"Video sumber tidak ditemukan di: {source_video}")
 
     # Ambil start_time dan end_time hasil AI dari tahap 3
-    director_data = state.get("stages", {}).get(CheckpointManager.STAGE_DIRECTOR_ANALYSIS, {})
+    director_data = state.get("stages", {}).get(config.STAGE_DIRECTOR_ANALYSIS, {})
     start_time = director_data.get("start")
     end_time = director_data.get("end")
 
@@ -34,8 +31,8 @@ def cut_video():
 
     # Hapus file output lama jika ada 
     # (Penting! Berjaga-jaga jika skrip ini sedang di-retry oleh n8n akibat timeout sebelumnya)
-    if os.path.exists(FINAL_CUT_PATH):
-        os.remove(FINAL_CUT_PATH)
+    if os.path.exists(config.FINAL_CUT_VIDEO_FILE):
+        os.remove(config.FINAL_CUT_VIDEO_FILE)
 
     # Efek blur diringankan sedikit (15:15) agar CPU tidak ngos-ngosan
     blur_filter = (
@@ -55,7 +52,7 @@ def cut_video():
         "-c:v", "libx264",
         "-preset", "ultrafast",
         "-c:a", "copy",
-        FINAL_CUT_PATH
+        config.FINAL_CUT_VIDEO_FILE
     ]
 
     print(f"Memotong video dari detik {start_time} ke {end_time} dengan kecepatan Turbo...")
@@ -64,7 +61,7 @@ def cut_video():
 
     return {
         "paths": {
-            "cut_video": FINAL_CUT_PATH
+            "cut_video": config.FINAL_CUT_VIDEO_FILE
         }
     }
 
@@ -72,7 +69,7 @@ def cut_video():
 if __name__ == "__main__":
     try:
         cm = CheckpointManager()
-        cm.run_stage(CheckpointManager.STAGE_CUT_VIDEO, cut_video)
+        cm.run_stage(config.STAGE_CUT_VIDEO, cut_video)
     except Exception as e:
         print(f"❌ Error: {e}", file=sys.stderr)
         sys.exit(1)

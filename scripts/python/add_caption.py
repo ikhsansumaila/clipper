@@ -3,18 +3,19 @@ import os
 import re
 import shlex
 import sys
+import config
 from checkpoint_manager import CheckpointManager
 
 
 def add_caption():
     # 1. Baca data potongan dari director-cut.json
-    with open("/home/ubuntu/clipper/output/temp/director-cut.json", "r") as f:
+    with open(config.DIRECTOR_CUT_FILE, "r") as f:
         cut_data = json.load(f)
         start_offset = float(cut_data["start"])
 
     # 2. Baca transkrip, filter, dan geser waktunya
     new_srt_lines = []
-    with open("/home/ubuntu/clipper/output/temp/transcript.txt", "r") as f:
+    with open(config.TRANSCRIPT_FILE, "r") as f:
         lines = f.readlines()
 
     def format_time(t):
@@ -39,7 +40,7 @@ def add_caption():
             index += 1
 
     # 3. Simpan file .srt yang sudah disesuaikan
-    with open("/home/ubuntu/clipper/output/temp/subs.srt", "w") as f:
+    with open(config.SUBS_FILE, "w") as f:
         f.writelines(new_srt_lines)
 
     # 4. Ambil title dari director-cut.json
@@ -48,22 +49,21 @@ def add_caption():
     video_title = re.sub(r'_+', '_', video_title).strip('_')
 
     # 5. Burn subtitle ke video
-    output_path = f"/home/ubuntu/clipper/output/results/{video_title}.mp4"
-    print(f"Burning subtitle ke video dan menyimpan sebagai: {output_path}")
+    result_file = f"{config.RESULTS_DIR}/{video_title}.mp4"
+    print(f"Burning subtitle ke video dan menyimpan sebagai: {result_file}")
 
     # Fontsize dikecilkan, Alignment=2 (bawah tengah), MarginV (jarak dari bawah)
     # try on simulator:
     # https://ffmpeg-subtitle-simulator.vercel.app/
-    cmd = (
-        "ffmpeg -y -i /home/ubuntu/clipper/output/temp/final-cut.mp4 "
-        "-vf \"subtitles=/home/ubuntu/clipper/output/temp/subs.srt:force_style='FontName=Arial Bold,FontSize=8,PrimaryColour=&H1BDBF8&,OutlineColour=&H000000&,BackColour=&H4D000000&,Bold=1,Italic=0,BorderStyle=3,Outline=1,Shadow=1,MarginV=75,Alignment=2'\" "
-        f"-c:a copy {shlex.quote(output_path)}"
+    cmd = (f"ffmpeg -y -i {config.FINAL_CUT_VIDEO_FILE} "
+        f"-vf \"subtitles={config.SUBS_FILE}:force_style='FontName=Arial Bold,FontSize=8,PrimaryColour=&H1BDBF8&,OutlineColour=&H000000&,BackColour=&H4D000000&,Bold=1,Italic=0,BorderStyle=3,Outline=1,Shadow=1,MarginV=75,Alignment=2'\" "
+        f"-c:a copy {shlex.quote(result_file)}"
     )
     os.system(cmd)
 
     return {
         "paths": {
-            "final_video": output_path
+            "final_video": result_file
         }
     }
 
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     try:
         cm = CheckpointManager()
         # Jalankan stage terakhir
-        success = cm.run_stage(CheckpointManager.STAGE_ADD_CAPTION, add_caption)
+        success = cm.run_stage(config.STAGE_ADD_CAPTION, add_caption)
         
         # # JIKA SEMUA STAGE SUKSES, RESET CHECKPOINT-NYA
         # if success:

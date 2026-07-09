@@ -2,46 +2,35 @@ import json
 import os
 import sys
 import tempfile
+import config
 
 class CheckpointManager:
-    STAGE_DOWNLOAD = "1_download"
-    STAGE_TRANSCRIBE = "2_transcribe"
-    STAGE_DIRECTOR_ANALYSIS = "3_director_analysis"
-    STAGE_CUT_VIDEO = "4_cut_video"
-    STAGE_ADD_CAPTION = "5_add_caption"
 
-    STAGES = [
-        STAGE_DOWNLOAD,
-        STAGE_TRANSCRIBE,
-        STAGE_DIRECTOR_ANALYSIS,
-        STAGE_CUT_VIDEO,
-        STAGE_ADD_CAPTION,
-    ]
+    def __init__(self):
+        self.dirpath = config.TEMP_DIR
+        self.statefilepath = config.STATE_FILE
 
-    LAST_STAGE = STAGE_ADD_CAPTION
-
-    def __init__(self, filepath="/home/ubuntu/clipper/output/temp/state.json"):
-        self.filepath = filepath
-        self.dirpath = os.path.dirname(filepath)
+        # file history
+        self.history_filepath = config.HISTORY_FILE
         
         if self.dirpath and not os.path.exists(self.dirpath):
             os.makedirs(self.dirpath, exist_ok=True)
 
     def _read_data(self):
-        if not os.path.exists(self.filepath):
+        if not os.path.exists(self.statefilepath):
             return None
         try:
-            with open(self.filepath, 'r', encoding='utf-8') as f:
+            with open(self.statefilepath, 'r', encoding='utf-8') as f:
                 return json.load(f)
         except json.JSONDecodeError:
-            print(f"Warning: File {self.filepath} korup.")
+            print(f"Warning: File {self.statefilepath} korup.")
             return None
 
     def _write_data(self, data):
         fd, temp_path = tempfile.mkstemp(dir=self.dirpath, text=True)
         with os.fdopen(fd, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2)
-        os.replace(temp_path, self.filepath)
+        os.replace(temp_path, self.statefilepath)
 
     def initialize(self, video_id="", url=""):
         """Inisialisasi file JSON. Otomatis reset jika mendeteksi URL video baru."""
@@ -56,11 +45,11 @@ class CheckpointManager:
                 data = None  # Mengubah data menjadi None akan memicu pembuatan ulang di bawah
             elif saved_url and url and saved_url == url:
                 # Cek jika stage terakhir sudah selesai
-                if data.get("stages", {}).get(self.LAST_STAGE, {}).get("status") == "completed":
+                if data.get("stages", {}).get(config.LAST_STAGE, {}).get("status") == "completed":
                     print("🔄 Proses untuk URL ini sudah selesai sepenuhnya. Mereset stage mulai dari 3_director_analysis...")
                     if "stages" not in data:
                         data["stages"] = {}
-                    for stage in [self.STAGE_DIRECTOR_ANALYSIS, self.STAGE_CUT_VIDEO, self.STAGE_ADD_CAPTION]:
+                    for stage in [config.STAGE_DIRECTOR_ANALYSIS, config.STAGE_CUT_VIDEO, config.STAGE_ADD_CAPTION]:
                         data["stages"][stage] = {"status": "pending"}
                     self._write_data(data)
             elif not saved_url and url:
@@ -76,7 +65,7 @@ class CheckpointManager:
                 "paths": {},
                 "stages": {
                     stage_name: {"status": "pending"}
-                    for stage_name in self.STAGES
+                    for stage_name in config.STAGES
                 }
             }
             self._write_data(data)
@@ -111,10 +100,10 @@ class CheckpointManager:
 
     def reset(self):
         """Menghapus file checkpoint untuk mereset seluruh status."""
-        if os.path.exists(self.filepath):
+        if os.path.exists(self.statefilepath):
             try:
-                os.remove(self.filepath)
-                print(f"✅ Checkpoint direset: {self.filepath} telah dihapus.")
+                os.remove(self.statefilepath)
+                print(f"✅ Checkpoint direset: {self.statefilepath} telah dihapus.")
             except Exception as e:
                 print(f"⚠️ Gagal menghapus checkpoint: {e}")
         else:
@@ -161,3 +150,51 @@ class CheckpointManager:
             print(f"[{stage_name}] GAGAL: {str(e)}")
             self.update_stage(stage_name, "failed", error=str(e))
             sys.exit(1)
+
+    # ==========================================
+    # FUNGSI HISTORY (RIWAYAT KLIP)
+    # ==========================================
+    def _read_history(self):
+        """Membaca file history.json."""
+        if not os.path.exists(self.history_filepath):
+            return {}
+        try:
+            with open(self.history_filepath, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except json.JSONDecodeError:
+            return {}
+
+    def _write_history(self, data):
+        """Menulis ke file history.json dengan aman."""
+        fd, temp_path = tempfile.mkstemp(dir=self.dirpath, text=True)
+        with os.fdopen(fd, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2)
+        os.replace(temp_path, self.history_filepath)
+
+    def add_history(self, url, new_clips):
+        f"""Menambahkan klip ke history berdasarkan URL, maksimal {config.MAX_HISTORY_CLIPS} klip terakhir."""
+        if not url or not new_clips:
+            return
+
+        history_data = self._read_history()
+
+        # Buat list kosong jika URL belum pernah diproses sebelumnya
+        if url not in history_data:
+            history_data[url] = []
+
+        # Pastikan format new_clips adalah List/Array
+        if isinstance(new_clips, dict):
+            new_clips = [new_clips]
+
+        # Masukkan klip baru ke dalam riwayat
+        history_data[url].extend(new_clips)
+
+        # FITUR MAX 20: Ambil hanya 20 elemen terakhir dari list (menghapus yang paling lama)
+        history_data[url] = history_data[url][-config.MAX_HISTORY_CLIPS:]
+
+        self._write_history(history_data)
+
+    def get_history(self, url):
+        """Mengambil daftar riwayat klip berdasarkan URL."""
+        history_data = self._read_history()
+        return history_data.get(url, [])

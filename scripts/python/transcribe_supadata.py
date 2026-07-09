@@ -3,22 +3,14 @@ import os
 import sys
 import time
 import requests
+import config
 from checkpoint_manager import CheckpointManager
-
-# ==========================================
-# KONFIGURASI & PATHS
-# ==========================================
-API_KEY = os.getenv("SUPADATA_API_KEY", "")
-BASE_URL = "https://api.supadata.ai/v1"
-TXT_PATH = "/home/ubuntu/clipper/output/temp/transcript.txt"
-URL_FILE_PATH = "/home/ubuntu/clipper/output/temp/video_url.txt"
-
 
 def transcribe_supadata():
     """Fungsi utama untuk mengambil transkrip dari Supadata."""
     
     # Proteksi API Key
-    if not API_KEY:
+    if not config.SUPADATA_API_KEY:
         raise ValueError("SUPADATA_API_KEY tidak ditemukan di environment variables!")
 
     # 1. Ambil URL langsung dari Checkpoint Manager
@@ -30,8 +22,8 @@ def transcribe_supadata():
         raise ValueError("URL video tidak ditemukan di file Checkpoint (state.json).")
 
     # 2. Persiapan request ke API
-    os.makedirs(os.path.dirname(TXT_PATH), exist_ok=True)
-    headers = {"x-api-key": API_KEY, "Content-Type": "application/json"}
+    os.makedirs(os.path.dirname(config.TRANSCRIPT_FILE), exist_ok=True)
+    headers = {"x-api-key": config.SUPADATA_API_KEY, "Content-Type": "application/json"}
     params = {
         "url": video_url,
         "text": "false",
@@ -40,7 +32,7 @@ def transcribe_supadata():
 
     print(f"🚀 Meminta transkrip langsung (sync) dari Supadata untuk: {video_url}")
 
-    response = requests.get(f"{BASE_URL}/transcript", headers=headers, params=params)
+    response = requests.get(f"{config.SUPADATA_BASE_URL}/transcript", headers=headers, params=params)
 
     # DEBUG: tampilkan hasil mentah dari request Supadata
     # print("========== DEBUG SUPADATA RESPONSE ==========")
@@ -57,7 +49,7 @@ def transcribe_supadata():
         
         max_retries = 60
         for i in range(max_retries):
-            poll_response = requests.get(f"{BASE_URL}/transcript/{job_id}", headers={"x-api-key": API_KEY})
+            poll_response = requests.get(f"{config.SUPADATA_BASE_URL}/transcript/{job_id}", headers={"x-api-key": config.SUPADATA_API_KEY})
             poll_response.raise_for_status()
             poll_data = poll_response.json()
             
@@ -89,7 +81,7 @@ def transcribe_supadata():
 
     # 4. Simpan ke format .txt dengan timestamp
     print("✅ Data lirik berhasil diambil. Menyusun file txt...")
-    with open(TXT_PATH, "w", encoding="utf-8") as f:
+    with open(config.TRANSCRIPT_FILE, "w", encoding="utf-8") as f:
         for chunk in content_list:
             # Hapus karakter enter (\n dan \r) dan ganti dengan spasi
             text = chunk.get("text", "").replace("\n", " ").replace("\r", " ").strip()
@@ -101,13 +93,13 @@ def transcribe_supadata():
             
             f.write(f"[{start_sec:.2f} - {end_sec:.2f}] {text}\n")
 
-    print(f"🎉 SUKSES! File transcript berhasil dibuat di: {TXT_PATH}")
+    print(f"🎉 SUKSES! File transcript berhasil dibuat di: {config.TRANSCRIPT_FILE}")
 
     # 5. Kembalikan data untuk dicatat di Checkpoint
     return {
         "provider": "supadata",
         "paths": {
-            "transcript": TXT_PATH
+            "transcript": config.TRANSCRIPT_FILE
         }
     }
 
@@ -118,8 +110,8 @@ if __name__ == "__main__":
 
         # 1. BACA URL DARI FILE TXT (DARI n8n)
         current_url = ""
-        if os.path.exists(URL_FILE_PATH):
-            with open(URL_FILE_PATH, "r", encoding="utf-8") as file:
+        if os.path.exists(config.URL_FILE):
+            with open(config.URL_FILE, "r", encoding="utf-8") as file:
                 current_url = file.read().strip()
 
         # 2. INISIALISASI CHECKPOINT
@@ -127,15 +119,15 @@ if __name__ == "__main__":
         cm.initialize(url=current_url)
 
         # 3. UPDATE STATUS STAGE 1 (DOWNLOAD VIA n8n)
-        if not cm.is_completed(CheckpointManager.STAGE_DOWNLOAD):
-            print(f"[{CheckpointManager.STAGE_DOWNLOAD}] Video sudah di-download oleh n8n. Mencatat ke Checkpoint...")
-            cm.update_stage(CheckpointManager.STAGE_DOWNLOAD, "completed", method="n8n_wget")
+        if not cm.is_completed(config.STAGE_DOWNLOAD):
+            print(f"[{config.STAGE_DOWNLOAD}] Video sudah di-download oleh n8n. Mencatat ke Checkpoint...")
+            cm.update_stage(config.STAGE_DOWNLOAD, "completed", method="n8n_wget")
             
             # Catat juga lokasi file video asli
-            cm.update_path("source_video", "/home/ubuntu/clipper/output/temp/source.mp4")
+            cm.update_path("source_video", config.SOURCE_VIDEO_FILE)
 
         # 4. JALANKAN PROSES TRANSKRIP
-        cm.run_stage(CheckpointManager.STAGE_TRANSCRIBE, transcribe_supadata)
+        cm.run_stage(config.STAGE_TRANSCRIBE, transcribe_supadata)
 
     except Exception as e:
         print(f"❌ Error: {e}", file=sys.stderr)

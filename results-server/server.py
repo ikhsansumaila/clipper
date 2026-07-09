@@ -9,6 +9,7 @@ from pathlib import Path
 from urllib.parse import unquote
 import urllib.request
 import urllib.error
+import discord_notif
 
 
 APP_DIR = Path(__file__).resolve().parent
@@ -83,6 +84,9 @@ class ResultsHandler(SimpleHTTPRequestHandler):
             
             with urllib.request.urlopen(req) as response:
                 pass # success
+
+            # Kirim notifikasi ke Discord
+            discord_notif.send_notification(f"Melakukan Reclip untuk Video: {url}")
                 
             self.send_response(200)
             self.send_header("Content-Type", "application/json")

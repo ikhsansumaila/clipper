@@ -7,21 +7,92 @@ import mimetypes
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
 from urllib.parse import unquote
+import urllib.request
+import urllib.error
 
+
+APP_DIR = Path(__file__).resolve().parent
+STATIC_DIR = Path(os.environ.get("STATIC_DIR", APP_DIR / "static"))
 RESULTS_DIR = Path(os.environ.get("RESULTS_DIR", "/data/results"))
+TEMP_DIR = Path(os.environ.get("TEMP_DIR", "/data/temp"))
 PORT = 5680
+N8N_WEBHOOK_URL = os.environ.get("N8N_WEBHOOK_URL", "")
+# DISCORD_BOT_ID = os.environ.get("DISCORD_BOT_ID", "")
+
 
 class ResultsHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
         path = unquote(self.path)
 
-        if path == "/api/files":
+        if path in ("/api/files", "/results/api/files"):
             self.send_file_list()
+        elif path in ("/api/state", "/results/api/state"):
+            self.send_state()
+        elif path in ("/api/history", "/results/api/history"):
+            self.send_history()
         elif path.startswith("/files/"):
             self.serve_file(path[7:])  # strip /files/
+        elif path.startswith("/results/files/"):
+            self.serve_file(path[15:])  # strip /results/files/ prefix used by reverse proxy UI links
+        elif path.startswith("/thumbs/"):
+            self.serve_thumb(path[8:])
+        elif path.startswith("/results/thumbs/"):
+            self.serve_thumb(path[16:])
         else:
             # Serve index.html for root and any other path
             self.serve_index()
+
+
+    def do_POST(self):
+        path = unquote(self.path)
+        if path in ("/api/reclip", "/results/api/reclip"):
+            self.handle_reclip()
+        else:
+            self.send_error(404)
+
+    def handle_reclip(self):
+        content_length = int(self.headers.get('Content-Length', 0))
+        body = self.rfile.read(content_length)
+        
+        try:
+            data = json.loads(body)
+            url = data.get("url")
+            if not url:
+                self.send_response(400)
+                self.end_headers()
+                self.wfile.write(b'{"error": "Missing url"}')
+                return
+                
+            if not N8N_WEBHOOK_URL:
+            # or not DISCORD_BOT_ID:
+                self.send_response(500)
+                self.end_headers()
+                self.wfile.write(b'{"error": "Missing webhook config"}')
+                return
+                
+            # Bentuk payload untuk di webhook n8n
+            payload = {
+                "author": "Web UI",
+                "content": f"<@> {url}",
+                # "channelId": "WebUI",
+                # "replyMessageId": "0"
+            }
+            
+            payload_bytes = json.dumps(payload).encode('utf-8')
+            req = urllib.request.Request(N8N_WEBHOOK_URL, data=payload_bytes, headers={'Content-Type': 'application/json'})
+            
+            with urllib.request.urlopen(req) as response:
+                pass # success
+                
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(b'{"success": true}')
+            
+        except Exception as e:
+            self.send_response(500)
+            self.end_headers()
+            self.wfile.write(json.dumps({"error": str(e)}).encode('utf-8'))
 
     def send_file_list(self):
         files = []
@@ -43,6 +114,55 @@ class ResultsHandler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
+    def send_state(self):
+        state_file = TEMP_DIR / "state.json"
+        
+        if state_file.exists() and state_file.is_file():
+            try:
+                data = state_file.read_bytes()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(data)))
+                self.send_header("Cache-Control", "no-cache")
+                self.end_headers()
+                self.wfile.write(data)
+                return
+            except Exception as e:
+                pass
+                
+        # Send empty object if file doesn't exist or error
+        data = b"{}"
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(data)))
+        self.send_header("Cache-Control", "no-cache")
+        self.end_headers()
+        self.wfile.write(data)
+
+    def send_history(self):
+        history_file = TEMP_DIR / "history.json"
+
+        if history_file.exists() and history_file.is_file():
+            try:
+                data = history_file.read_bytes()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(data)))
+                self.send_header("Cache-Control", "no-cache")
+                self.end_headers()
+                self.wfile.write(data)
+                return
+            except Exception:
+                pass
+
+        data = b"{}"
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(data)))
+        self.send_header("Cache-Control", "no-cache")
+        self.end_headers()
+        self.wfile.write(data)
+
     def serve_file(self, filename):
         filepath = RESULTS_DIR / filename
         if not filepath.exists() or not filepath.is_file():
@@ -56,6 +176,23 @@ class ResultsHandler(SimpleHTTPRequestHandler):
             self.send_error(403)
             return
 
+        self._send_file_content(filepath)
+
+    def serve_thumb(self, filename):
+        thumb_path = RESULTS_DIR / "thumbs" / filename
+        if not thumb_path.exists() or not thumb_path.is_file():
+            self.send_error(404)
+            return
+            
+        try:
+            thumb_path.resolve().relative_to(RESULTS_DIR.resolve())
+        except ValueError:
+            self.send_error(403)
+            return
+            
+        self._send_file_content(thumb_path)
+
+    def _send_file_content(self, filepath):
         mime_type = mimetypes.guess_type(str(filepath))[0] or "application/octet-stream"
         size = filepath.stat().st_size
 
@@ -97,7 +234,7 @@ class ResultsHandler(SimpleHTTPRequestHandler):
                 self.wfile.write(chunk)
 
     def serve_index(self):
-        index_path = RESULTS_DIR / "index.html"
+        index_path = STATIC_DIR / "index.html"
         if not index_path.exists():
             self.send_error(404)
             return

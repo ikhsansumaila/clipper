@@ -31,5 +31,6 @@ services:
       - "5680:5680"
     volumes:
       - ./output/results:/data/results:ro
-    environment:
-      - RESULTS_DIR=/data/results
+      - ./output/temp:/data/temp:ro
+    env_file:
+      - .env

@@ -61,6 +61,14 @@ def add_caption():
     )
     os.system(cmd)
 
+    # 6. Generate Thumbnail otomatis
+    print("Membentuk thumbnail video...")
+    thumb_dir = f"{config.RESULTS_DIR}/thumbs"
+    os.makedirs(thumb_dir, exist_ok=True)
+    thumb_file = f"{thumb_dir}/{video_title}.jpg"
+    thumb_cmd = f"ffmpeg -y -i {shlex.quote(result_file)} -ss 00:00:01 -vframes 1 -vf \"scale=480:-1\" -q:v 3 {shlex.quote(thumb_file)} 2>/dev/null"
+    os.system(thumb_cmd)
+
     return {
         "paths": {
             "final_video": result_file

@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clipper Results</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0f0f13;
+            color: #e4e4e7;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-bottom: 1px solid #2a2a3e;
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #a78bfa, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header h1 .icon { -webkit-text-fill-color: initial; }
+
+        .stats {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 0.85rem;
+            color: #a1a1aa;
+        }
+
+        .stats span {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .stats .num {
+            color: #a78bfa;
+            font-weight: 600;
+        }
+
+        /* Search & Filter */
+        .controls {
+            max-width: 1200px;
+            margin: 1.5rem auto;
+            padding: 0 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.7rem 1rem 0.7rem 2.5rem;
+            background: #1a1a2e;
+            border: 1px solid #2a2a3e;
+            border-radius: 10px;
+            color: #e4e4e7;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-box input:focus { border-color: #a78bfa; }
+
+        .search-box::before {
+            content: "🔍";
+            position: absolute;
+            left: 0.8rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.85rem;
+        }
+
+        .filter-btn {
+            padding: 0.7rem 1.2rem;
+            background: #1a1a2e;
+            border: 1px solid #2a2a3e;
+            border-radius: 10px;
+            color: #a1a1aa;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            border-color: #a78bfa;
+            color: #a78bfa;
+            background: rgba(167, 139, 250, 0.1);
+        }
+
+        /* Sort */
+        .sort-select {
+            padding: 0.7rem 1rem;
+            background: #1a1a2e;
+            border: 1px solid #2a2a3e;
+            border-radius: 10px;
+            color: #a1a1aa;
+            font-size: 0.85rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* Grid */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem 2rem;
+        }
+
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        /* File Card */
+        .file-card {
+            background: #1a1a2e;
+            border: 1px solid #2a2a3e;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .file-card:hover {
+            border-color: #a78bfa;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(167, 139, 250, 0.15);
+        }
+
+        .file-preview {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #12121a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .file-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .file-preview video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .file-preview .file-icon {
+            font-size: 3rem;
+            opacity: 0.5;
+        }
+
+        .file-preview .duration {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.8);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .file-info {
+            padding: 1rem;
+        }
+
+        .file-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #e4e4e7;
+            margin-bottom: 0.5rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .file-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.78rem;
+            color: #71717a;
+        }
+
+        .file-type {
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .type-video { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+        .type-audio { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+        .type-image { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+        .type-other { background: rgba(161, 161, 170, 0.15); color: #a1a1aa; }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #71717a;
+        }
+
+        .empty-state .icon { font-size: 4rem; margin-bottom: 1rem; opacity: 0.5; }
+        .empty-state h2 { font-size: 1.3rem; margin-bottom: 0.5rem; color: #a1a1aa; }
+        .empty-state p { font-size: 0.9rem; }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: #1a1a2e;
+            border: 1px solid #2a2a3e;
+            border-radius: 16px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #2a2a3e;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #a1a1aa;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover { background: #2a2a3e; color: #e4e4e7; }
+
+        .modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+        }
+
+        .modal-body video, .modal-body audio {
+            max-width: 100%;
+            max-height: 70vh;
+            border-radius: 8px;
+        }
+
+        .modal-body img {
+            max-width: 100%;
+            max-height: 70vh;
+            border-radius: 8px;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #2a2a3e;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .modal-footer .meta { font-size: 0.8rem; color: #71717a; }
+
+        .btn-download {
+            padding: 0.5rem 1.2rem;
+            background: linear-gradient(135deg, #a78bfa, #60a5fa);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+        .btn-download:hover { opacity: 0.85; }
+
+        /* Refresh button */
+        .btn-refresh {
+            padding: 0.5rem 1rem;
+            background: #1a1a2e;
+            border: 1px solid #2a2a3e;
+            border-radius: 10px;
+            color: #a1a1aa;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .btn-refresh:hover { border-color: #a78bfa; color: #a78bfa; }
+        .btn-refresh.spinning .refresh-icon { animation: spin 1s linear infinite; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #71717a;
+        }
+
+        .loading .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #2a2a3e;
+            border-top-color: #a78bfa;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+
+
+        /* Navigation */
+        .nav-tabs {
+            max-width: 1200px;
+            margin: 1.25rem auto 0;
+            padding: 0 2rem;
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .nav-tab {
+            padding: 0.7rem 1.1rem;
+            background: #1a1a2e;
+            border: 1px solid #2a2a3e;
+            border-radius: 10px;
+            color: #a1a1aa;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .nav-tab:hover, .nav-tab.active {
+            color: #e4e4e7;
+            border-color: #a78bfa;
+            background: rgba(167, 139, 250, 0.12);
+        }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* Stage Progress */
+        .progress-summary {
+            background: linear-gradient(135deg, rgba(167,139,250,.14), rgba(96,165,250,.10));
+            border: 1px solid #2a2a3e;
+            border-radius: 16px;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+        }
+        .progress-summary-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        .progress-title { font-size: 1.1rem; font-weight: 700; color: #f4f4f5; margin-bottom: .35rem; }
+        .progress-url { color: #a1a1aa; font-size: .82rem; word-break: break-all; }
+        .status-pill {
+            padding: .45rem .75rem;
+            border-radius: 999px;
+            font-size: .78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .03em;
+        }
+        .status-completed { background: rgba(34,197,94,.16); color: #22c55e; }
+        .status-in_progress { background: rgba(250,204,21,.16); color: #facc15; }
+        .status-failed { background: rgba(239,68,68,.16); color: #ef4444; }
+        .status-pending { background: rgba(161,161,170,.16); color: #a1a1aa; }
+        .progress-bar { height: 10px; background: #111827; border-radius: 999px; overflow: hidden; border: 1px solid #2a2a3e; }
+        .progress-fill { height: 100%; width: 0; background: linear-gradient(90deg, #a78bfa, #60a5fa); transition: width .4s ease; }
+        .stage-list { display: grid; gap: .85rem; }
+        .stage-card {
+            background: #1a1a2e;
+            border: 1px solid #2a2a3e;
+            border-radius: 14px;
+            padding: 1rem;
+        }
+        .stage-head { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:.6rem; }
+        .stage-name { font-weight: 700; color: #e4e4e7; }
+        .stage-details { color: #a1a1aa; font-size: .86rem; line-height: 1.55; }
+        .stage-details strong { color: #d4d4d8; }
+        .path-list { margin-top: 1rem; font-size: .82rem; color: #a1a1aa; }
+        .path-list div { padding: .35rem 0; border-bottom: 1px solid rgba(42,42,62,.6); word-break: break-all; }
+        .path-list div:last-child { border-bottom: 0; }
+
+
+        /* History Panel */
+        .history-list { display: grid; gap: 1.5rem; }
+        .history-group { background: #1a1a2e; border: 1px solid #2a2a3e; border-radius: 14px; padding: 1.25rem; }
+        .history-group-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid #2a2a3e; font-weight: 700; color: #f4f4f5; }
+        .history-group-header .yt-icon { color: #ef4444; font-size: 1.2rem; }
+        .history-group-url a { color: #60a5fa; text-decoration: none; font-weight: 600; word-break: break-all; }
+        .history-group-url a:hover { text-decoration: underline; }
+        .history-item { background: #111827; border: 1px solid #2a2a3e; border-radius: 10px; padding: 1rem; margin-bottom: 0.75rem; }
+        .history-item:last-child { margin-bottom: 0; }
+        .history-item-title { font-weight: 700; color: #e4e4e7; margin-bottom: 0.5rem; font-size: 0.95rem; }
+        .history-item-meta { display: flex; gap: 1rem; font-size: 0.82rem; color: #a78bfa; margin-bottom: 0.5rem; font-weight: 600; }
+        .history-item-reason { font-size: 0.85rem; color: #a1a1aa; line-height: 1.5; }
+
+
+        .history-group-header .action-btn {
+            margin-left: auto;
+            padding: 0.4rem 0.8rem;
+            background: rgba(167, 139, 250, 0.15);
+            border: 1px solid rgba(167, 139, 250, 0.3);
+            border-radius: 6px;
+            color: #a78bfa;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+        .history-group-header .action-btn:hover {
+            background: rgba(167, 139, 250, 0.25);
+            color: #fff;
+        }
+        .history-group-header .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .header { padding: 1rem; }
+            .header h1 { font-size: 1.2rem; }
+            .controls { padding: 0 1rem; }
+            .container { padding: 0 1rem 1rem; }
+            .file-grid { grid-template-columns: 1fr; }
+            .modal { margin: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-content">
+        <h1><span class="icon">✂️</span> Clipper Results</h1>
+        <div style="display:flex;align-items:center;gap:1rem;">
+            <div class="stats">
+                <span>📁 <span class="num" id="totalFiles">0</span> files</span>
+                <span>💾 <span class="num" id="totalSize">0 B</span></span>
+            </div>
+            <button class="btn-refresh" onclick="refreshFiles()" id="refreshBtn">
+                <span class="refresh-icon">🔄</span> Refresh
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="nav-tabs">
+    <button class="nav-tab active" id="tabFilesBtn" onclick="switchTab('files')">📁 Results</button>
+    <button class="nav-tab" id="tabProgressBtn" onclick="switchTab('progress')">📊 Stage Progress</button>
+    <button class="nav-tab" id="tabHistoryBtn" onclick="switchTab('history')">📜 History</button>
+</div>
+
+<div class="tab-panel active" id="filesPanel">
+
+<div class="controls">
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Cari file..." oninput="filterFiles()">
+    </div>
+    <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">Semua</button>
+    <button class="filter-btn" data-filter="video" onclick="setFilter('video', this)">🎬 Video</button>
+    <button class="filter-btn" data-filter="audio" onclick="setFilter('audio', this)">🎵 Audio</button>
+    <button class="filter-btn" data-filter="image" onclick="setFilter('image', this)">🖼️ Image</button>
+    <select class="sort-select" id="sortSelect" onchange="filterFiles()">
+        <option value="newest">Terbaru</option>
+        <option value="oldest">Terlama</option>
+        <option value="name">Nama A-Z</option>
+        <option value="size">Ukuran</option>
+    </select>
+</div>
+
+<div class="container">
+    <div id="loading" class="loading" style="display:none;">
+        <div class="spinner"></div>
+        <p>Memuat file...</p>
+    </div>
+    <div class="file-grid" id="fileGrid"></div>
+    <div id="emptyState" class="empty-state" style="display:none;">
+        <div class="icon">📂</div>
+        <h2>Belum ada file</h2>
+        <p>File hasil clipper akan muncul di sini.</p>
+    </div>
+</div>
+</div>
+
+<div class="tab-panel" id="progressPanel">
+    <div class="container" style="padding-top:1.5rem;">
+        <div id="progressLoading" class="loading" style="display:none;">
+            <div class="spinner"></div>
+            <p>Memuat stage progress...</p>
+        </div>
+        <div id="progressContent"></div>
+    </div>
+</div>
+
+<div class="tab-panel" id="historyPanel">
+    <div class="container" style="padding-top:1.5rem;">
+        <div id="historyLoading" class="loading" style="display:none;">
+            <div class="spinner"></div>
+            <p>Memuat history...</p>
+        </div>
+        <div id="historyContent"></div>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3 id="modalTitle">File</h3>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body" id="modalBody"></div>
+        <div class="modal-footer">
+            <span class="meta" id="modalMeta"></span>
+            <a class="btn-download" id="modalDownload" href="#" download>⬇ Download</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    let allFiles = [];
+    let currentFilter = 'all';
+    let lastRenderedHash = '';
+
+    const videoExts = ['mp4', 'webm', 'mkv', 'avi', 'mov', 'flv', 'wmv'];
+    const audioExts = ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a', 'wma'];
+    const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
+
+    function getExt(name) {
+        return (name.split('.').pop() || '').toLowerCase();
+    }
+
+    function getType(name) {
+        const ext = getExt(name);
+        if (videoExts.includes(ext)) return 'video';
+        if (audioExts.includes(ext)) return 'audio';
+        if (imageExts.includes(ext)) return 'image';
+        return 'other';
+    }
+
+    function getIcon(type) {
+        switch(type) {
+            case 'video': return '🎬';
+            case 'audio': return '🎵';
+            case 'image': return '🖼️';
+            default: return '📄';
+        }
+    }
+
+    function formatSize(bytes) {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    function formatDate(dateStr) {
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('id-ID', {
+            day: 'numeric', month: 'short', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        });
+    }
+
+    async function fetchFiles() {
+        if(allFiles.length===0) document.getElementById('loading').style.display = 'block';
+        document.getElementById('fileGrid').innerHTML = '';
+        document.getElementById('emptyState').style.display = 'none';
+
+        try {
+            const resp = await fetch('/results/api/files');
+            if (!resp.ok) throw new Error('API error');
+            allFiles = await resp.json();
+        } catch (e) {
+            allFiles = [];
+        }
+
+        document.getElementById('loading').style.display = 'none';
+        updateStats();
+        filterFiles();
+    }
+
+    function updateStats() {
+        document.getElementById('totalFiles').textContent = allFiles.length;
+        const total = allFiles.reduce((s, f) => s + (f.size || 0), 0);
+        document.getElementById('totalSize').textContent = formatSize(total);
+    }
+
+    function filterFiles() {
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        const sort = document.getElementById('sortSelect').value;
+
+        let filtered = allFiles.filter(f => {
+            const type = getType(f.name);
+            const matchFilter = currentFilter === 'all' || type === currentFilter;
+            const matchSearch = f.name.toLowerCase().includes(search);
+            return matchFilter && matchSearch;
+        });
+
+        filtered.sort((a, b) => {
+            switch(sort) {
+                case 'newest': return new Date(b.modified) - new Date(a.modified);
+                case 'oldest': return new Date(a.modified) - new Date(b.modified);
+                case 'name': return a.name.localeCompare(b.name);
+                case 'size': return (b.size || 0) - (a.size || 0);
+            }
+        });
+
+        renderFiles(filtered);
+    }
+
+    function setFilter(filter, btn) {
+        currentFilter = filter;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        filterFiles();
+    }
+
+    function renderFiles(files) {
+        const grid = document.getElementById('fileGrid');
+        const empty = document.getElementById('emptyState');
+
+        if (files.length === 0) {
+            grid.innerHTML = '';
+            empty.style.display = 'block';
+            return;
+        }
+
+        empty.style.display = 'none';
+        const hash = files.map(f => f.name+f.size+f.modified).join(''); if(hash === lastRenderedHash) return; lastRenderedHash = hash; grid.innerHTML = files.map(f => {
+            const type = getType(f.name);
+            const ext = getExt(f.name);
+            let preview = '';
+
+            if (type === 'video') {
+                const thumb = encodeURIComponent(f.name.replace(/\.mp4$/, '.jpg'));
+                preview = `<img src="/results/thumbs/${thumb}" onerror="this.onerror=null; this.src='/results/files/${encodeURIComponent(f.name)}#t=0.1'; this.outerHTML='<video src=\''+this.src+'\' preload=\'metadata\' muted></video>';" alt="${f.name}" loading="lazy">`;
+            } else if (type === 'image') {
+                preview = `<img src="/results/files/${encodeURIComponent(f.name)}" alt="${f.name}" loading="lazy">`;
+            } else if (type === 'audio') {
+                preview = `<div class="file-icon">🎵</div>`;
+            } else {
+                preview = `<div class="file-icon">${getIcon(type)}</div>`;
+            }
+
+            return `
+                <div class="file-card" onclick="openPreview('${encodeURIComponent(f.name)}', '${type}', '${formatSize(f.size)}', '${formatDate(f.modified)}')">
+                    <div class="file-preview">${preview}</div>
+                    <div class="file-info">
+                        <div class="file-name" title="${f.name}">${f.name}</div>
+                        <div class="file-meta">
+                            <span class="file-type type-${type}">${ext}</span>
+                            <span>${formatSize(f.size)}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function openPreview(encodedName, type, size, date) {
+        const name = decodeURIComponent(encodedName);
+        const url = `/results/files/${encodedName}`;
+
+        document.getElementById('modalTitle').textContent = name;
+        document.getElementById('modalMeta').textContent = `${size} • ${date}`;
+        document.getElementById('modalDownload').href = url;
+        document.getElementById('modalDownload').download = name;
+
+        const body = document.getElementById('modalBody');
+
+        if (type === 'video') {
+            body.innerHTML = `<video src="${url}" controls autoplay style="max-width:100%;max-height:70vh;border-radius:8px;"></video>`;
+        } else if (type === 'audio') {
+            body.innerHTML = `<div style="text-align:center"><div style="font-size:5rem;margin-bottom:1rem;">🎵</div><audio src="${url}" controls autoplay style="width:100%;max-width:500px;"></audio></div>`;
+        } else if (type === 'image') {
+            body.innerHTML = `<img src="${url}" style="max-width:100%;max-height:70vh;border-radius:8px;">`;
+        } else {
+            body.innerHTML = `<div style="text-align:center"><div style="font-size:5rem;margin-bottom:1rem;">📄</div><p style="color:#a1a1aa;">${name}</p></div>`;
+        }
+
+        document.getElementById('modal').classList.add('active');
+        document.addEventListener('keydown', escHandler);
+    }
+
+    function closeModal(e) {
+        if (e && e.target && !e.target.classList.contains('modal-overlay')) return;
+        document.getElementById('modal').classList.remove('active');
+        document.getElementById('modalBody').innerHTML = '';
+        document.removeEventListener('keydown', escHandler);
+    }
+
+    function escHandler(e) { if (e.key === 'Escape') closeModal(); }
+
+    async function refreshFiles() {
+        const btn = document.getElementById('refreshBtn');
+        btn.classList.add('spinning');
+        await fetchFiles();
+        setTimeout(() => btn.classList.remove('spinning'), 500);
+    }
+
+
+
+    const stageLabels = {
+        '1_download': 'Download Video',
+        '2_transcribe': 'Transcribe Audio',
+        '3_director_analysis': 'Director Analysis',
+        '4_cut_video': 'Cut Video',
+        '5_add_caption': 'Add Caption'
+    };
+
+    function switchTab(tab) {
+        document.getElementById('filesPanel').classList.toggle('active', tab === 'files');
+        document.getElementById('progressPanel').classList.toggle('active', tab === 'progress');
+        document.getElementById('historyPanel').classList.toggle('active', tab === 'history');
+
+        document.getElementById('tabFilesBtn').classList.toggle('active', tab === 'files');
+        document.getElementById('tabProgressBtn').classList.toggle('active', tab === 'progress');
+        document.getElementById('tabHistoryBtn').classList.toggle('active', tab === 'history');
+
+        if (tab === 'progress') fetchState();
+        if (tab === 'history') fetchHistory();
+    }
+
+    function statusClass(status) {
+        return `status-${(status || 'pending').replace(/[^a-zA-Z0-9_]/g, '_')}`;
+    }
+
+    function fmtTime(seconds) {
+        if (seconds === undefined || seconds === null || seconds === '') return '-';
+        const s = Math.floor(Number(seconds));
+        const h = Math.floor(s / 3600);
+        const m = Math.floor((s % 3600) / 60);
+        const sec = s % 60;
+        return h ? `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}` : `${m}:${String(sec).padStart(2,'0')}`;
+    }
+
+    async function fetchState() {
+        const loading = document.getElementById('progressLoading');
+        const content = document.getElementById('progressContent');
+        loading.style.display = 'block';
+        try {
+            const resp = await fetch('/results/api/state');
+            const state = resp.ok ? await resp.json() : {};
+            renderState(state);
+        } catch (e) {
+            content.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><h2>Gagal memuat state</h2><p>${e.message}</p></div>`;
+        } finally {
+            loading.style.display = 'none';
+        }
+    }
+
+    function renderState(state) {
+        const content = document.getElementById('progressContent');
+        if (!state || Object.keys(state).length === 0) {
+            content.innerHTML = `<div class="empty-state"><div class="icon">📭</div><h2>Belum ada progress</h2><p>File state.json belum tersedia.</p></div>`;
+            return;
+        }
+        const stages = state.stages || {};
+        const keys = Object.keys(stages).sort();
+        const completed = keys.filter(k => stages[k].status === 'completed').length;
+        const percent = keys.length ? Math.round((completed / keys.length) * 100) : 0;
+        const finalStage = stages['3_director_analysis'] || {};
+        const stageCards = keys.map(k => {
+            const s = stages[k] || {};
+            const extra = [];
+            if (s.method) extra.push(`<strong>Method:</strong> ${s.method}`);
+            if (s.provider) extra.push(`<strong>Provider:</strong> ${s.provider}`);
+            if (s.start !== undefined || s.end !== undefined) extra.push(`<strong>Clip:</strong> ${fmtTime(s.start)} - ${fmtTime(s.end)}`);
+            if (s.title) extra.push(`<strong>Title:</strong> ${s.title}`);
+            if (s.reason) extra.push(`<strong>Reason:</strong> ${s.reason}`);
+            return `<div class="stage-card">
+                <div class="stage-head">
+                    <div class="stage-name">${stageLabels[k] || k}</div>
+                    <span class="status-pill ${statusClass(s.status)}">${s.status || 'pending'}</span>
+                </div>
+                <div class="stage-details">${extra.length ? extra.join('<br>') : 'Tidak ada detail tambahan.'}</div>
+            </div>`;
+        }).join('');
+        const paths = state.paths || {};
+        const pathRows = Object.entries(paths).map(([k,v]) => `<div><strong>${k}:</strong> ${v}</div>`).join('');
+        content.innerHTML = `<div class="progress-summary">
+            <div class="progress-summary-top">
+                <div>
+                    <div class="progress-title">${finalStage.title || 'Clipper Stage Progress'}</div>
+                    <div class="progress-url">${state.url || '-'}</div>
+                </div>
+                <span class="status-pill ${statusClass(state.global_status)}">${state.global_status || 'unknown'} • ${percent}%</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:${percent}%"></div></div>
+            ${pathRows ? `<div class="path-list">${pathRows}</div>` : ''}
+        </div>
+        <div class="stage-list">${stageCards}</div>`;
+    }
+
+
+    async function fetchHistory() {
+        const loading = document.getElementById('historyLoading');
+        const content = document.getElementById('historyContent');
+        loading.style.display = 'block';
+        try {
+            const resp = await fetch('/results/api/history');
+            const data = resp.ok ? await resp.json() : {};
+            renderHistory(data);
+        } catch (e) {
+            content.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><h2>Gagal memuat history</h2><p>${e.message}</p></div>`;
+        } finally {
+            loading.style.display = 'none';
+        }
+    }
+
+    function renderHistory(data) {
+        const content = document.getElementById('historyContent');
+        const keys = Object.keys(data || {});
+        if (keys.length === 0) {
+            content.innerHTML = `<div class="empty-state"><div class="icon">📭</div><h2>Belum ada history</h2><p>Data clip history belum tersedia.</p></div>`;
+            return;
+        }
+        const groups = keys.map(url => {
+            const items = Array.isArray(data[url]) ? data[url] : [];
+            const cards = items.map((c, i) => `
+                <div class="history-item">
+                    <div class="history-item-title">Clip ${i+1}: ${c.title || 'Tanpa Judul'}</div>
+                    <div class="history-item-meta"><span>⏱️ ${fmtTime(c.start)} - ${fmtTime(c.end)}</span></div>
+                    <div class="history-item-reason">${c.reason || ''}</div>
+                </div>`).join('');
+            return `
+
+            <div class="history-group">
+                <div class="history-group-header">
+                    <span class="yt-icon">▶</span>
+                    <span class="history-group-url"><a href="${url}" target="_blank">${url}</a></span>
+                    <button class="action-btn" onclick="triggerReclip('${url}', this)">✂️ Buat Clip Baru</button>
+                </div>
+                ${cards || '<div style="color:#a1a1aa;font-size:0.85rem">Tidak ada clips</div>'}
+            </div>`;
+        }).join('');
+        content.innerHTML = `<div class="history-list">${groups}</div>`;
+    }
+
+
+    async function triggerReclip(url, btnElement) {
+        btnElement.disabled = true;
+        const originalText = btnElement.innerHTML;
+        btnElement.innerHTML = '⏳ Memproses...';
+        
+        try {
+            const resp = await fetch('/results/api/reclip', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: url })
+            });
+            
+            if (resp.ok) {
+                btnElement.innerHTML = '✅ Berhasil Diminta';
+                btnElement.style.color = '#22c55e';
+                btnElement.style.borderColor = 'rgba(34, 197, 94, 0.3)';
+                btnElement.style.background = 'rgba(34, 197, 94, 0.1)';
+            } else {
+                throw new Error('Gagal');
+            }
+        } catch (e) {
+            alert('Gagal membuat request clip baru: ' + e.message);
+            btnElement.innerHTML = originalText;
+            btnElement.disabled = false;
+        }
+        
+        setTimeout(() => {
+            if (btnElement.innerHTML === '✅ Berhasil Diminta') {
+                btnElement.innerHTML = originalText;
+                btnElement.disabled = false;
+                btnElement.style = '';
+            }
+        }, 5000);
+    }
+
+    // Init
+    fetchFiles();
+    // Auto refresh every 30 seconds
+    // setInterval(fetchFiles, 30000);
+    // setInterval(() => { if (document.getElementById('progressPanel').classList.contains('active')) fetchState();
+    //     if (document.getElementById('historyPanel').classList.contains('active')) fetchHistory(); }, 10000);
+</script>
+
+</body>
+</html>

@@ -50,9 +50,13 @@ def add_caption():
     # 5. Burn subtitle ke video
     output_path = f"/home/ubuntu/clipper/output/results/{video_title}.mp4"
     print(f"Burning subtitle ke video dan menyimpan sebagai: {output_path}")
+
+    # Fontsize dikecilkan, Alignment=2 (bawah tengah), MarginV (jarak dari bawah)
+    # try on simulator:
+    # https://ffmpeg-subtitle-simulator.vercel.app/
     cmd = (
         "ffmpeg -y -i /home/ubuntu/clipper/output/temp/final-cut.mp4 "
-        "-vf \"subtitles=/home/ubuntu/clipper/output/temp/subs.srt:force_style='Fontsize=12,PrimaryColour=&H00FFFF&'\" "
+        "-vf \"subtitles=/home/ubuntu/clipper/output/temp/subs.srt:force_style='FontName=Arial Bold,FontSize=8,PrimaryColour=&H1BDBF8&,OutlineColour=&H000000&,BackColour=&H4D000000&,Bold=1,Italic=0,BorderStyle=3,Outline=1,Shadow=1,MarginV=75,Alignment=2'\" "
         f"-c:a copy {shlex.quote(output_path)}"
     )
     os.system(cmd)

@@ -1,11 +1,12 @@
 # Clipper Project
 
-Clipper is an automated workflow system designed to capture YouTube videos via Discord, process them using n8n, and expose the results. 
+Clipper is an automated workflow system designed to capture YouTube videos via Discord, process them using n8n, and expose the results. It uses **Claude Sonnet 4.5** AI model to intelligently identify and extract the most viral moments from videos.
 
 ## Features
-- **Discord Integration:** Send a YouTube link in a Discord channel and tag the bot to initiate the clipping process.
-- **n8n Workflow Automation:** Coordinates the processing of the videos seamlessly.
-- **Results Server:** Serves the processed videos on a dedicated endpoint.
+- **Discord Integration:** Mention `@your-bot` with a YouTube link in Discord to start the clipping process
+- **AI-Powered Analysis:** Uses Claude Sonnet 4.5 to find the most engaging 30-59 second moments
+- **Automated Processing:** Transcribes, analyzes, cuts, and captions videos automatically
+- **Results Server:** Serves the processed clips on a dedicated web interface
 
 ## Architecture & Services
 The project runs via Docker Compose and consists of three main services:
@@ -27,10 +28,46 @@ Copy `.env.example` to `.env` and fill in the required values:
 cp .env.example .env
 ```
 Ensure you have the following variables properly set:
-- `DISCORD_BOT_TOKEN`
-- `DISCORD_BOT_STAGING_TOKEN`
-- `N8N_WEBHOOK_URL`
-- `N8N_WEBHOOK_TEST_URL`
+- `DISCORD_BOT_TOKEN` - Token for production bot
+- `DISCORD_BOT_STAGING_TOKEN` - Token for staging bot (n8n test workflow)
+- `N8N_WEBHOOK_URL` - Production webhook endpoint
+- `N8N_WEBHOOK_TEST_URL` - Staging webhook endpoint
+- `SUPADATA_API_KEY` - For video metadata queries
+- `MIHAKIDS_AI_API_KEY` - Bearer token for Claude Sonnet 4.5 API
+
+### n8n Workflow Credentials
+
+The n8n workflow requires the following credentials to be configured **inside n8n**:
+
+| Credential Type | Purpose | Required | Notes |
+|---|---|---|---|
+| **SSH Password** | Execute Python scripts and server commands | ✅ Yes | Hostname, Username, and Password (or SSH key) |
+| **HTTP Bearer Auth** | Claude Sonnet 4.5 AI API requests | ✅ Yes | Bearer token for AI model inference |
+| **Discord Bot API** | Send messages to Discord channels | ✅ Yes (×2) | One for production (`your-bot`), one for staging |
+| **Apify API** | YouTube metadata scraping & downloads | ✅ Yes (×2) | Primary and fallback API keys |
+| **VideoSailor API** | Alternative video download service | ⚠️ Optional | Fallback if Apify fails |
+| **Supadata API** | Video metadata queries | ⚠️ Optional | Alternative metadata source |
+
+### Apify Actors Used
+
+The workflow uses the following Apify actors for YouTube video processing:
+
+| Node Name | Actor | Purpose |
+|---|---|---|
+| **Get video metadata** | [YouTube Scraper](https://apify.com/actors/h7sDV53CddomktSi5) | Scrape YouTube video metadata (title, duration, etc.) |
+| **Get download url** | [YouTube Downloader](https://apify.com/actors/G1dli5lUik9LaUH0N) | Get direct download URLs for video files |
+| **Get download url (API KEY 2)** | [YouTube Downloader](https://apify.com/actors/G1dli5lUik9LaUH0N) | Fallback YouTube Downloader with secondary API key |
+
+> **Note:** You'll need valid Apify API credentials to use these actors. Create a free account at [apify.com](https://apify.com) to get started.
+
+**Setup Instructions:**
+1. Open your n8n instance
+2. Go to **Settings > Credentials** 
+3. Create new credentials for each type listed above
+4. Copy the credential ID after creation
+5. Update the n8n workflow JSON or re-configure the nodes with your new credentials
+
+> ⚠️ **Security:** All credentials are stored securely in n8n. Never commit real credentials to version control.
 
 ### Running the Project
 To start all services, run:
@@ -44,13 +81,23 @@ docker-compose up -d
 
 ### Usage
 In your configured Discord channel, mention the bot and include a YouTube link:
-`@octa-bot https://youtube.com/watch?v=...`
+`@your-bot https://youtube.com/watch?v=...`
 
 The bot will reply indicating that the video is being processed, and hand the link off to the n8n pipeline.
 
+### How It Works
+1. **Discord Bridge** receives the message and extracts the YouTube URL
+2. **n8n Workflow** processes the video:
+   - Downloads the video using Apify API
+   - Transcribes audio with Whisper
+   - Analyzes the transcript using **Claude Sonnet 4.5** AI model
+   - Identifies the most viral moment (30-59 seconds)
+   - Cuts the video and adds captions
+3. **Results Server** hosts the final clip for download
+
 ## Python Scripts
 
-Located in `scripts/python/`, these scripts handle various video processing tasks and can be called from n8n via Execute Command nodes:
+Located in `$WORKING_DIR/scripts/python/`, these scripts handle various video processing tasks and can be called from n8n via Execute Command nodes:
 
 ### check_url_exists.py
 Checks if a YouTube URL has already been processed by looking it up in `history.json`.
@@ -66,7 +113,7 @@ python3 scripts/python/check_url_exists.py --url "https://www.youtube.com/watch?
 
 **n8n Integration:**
 ```bash
-python3 /home/ubuntu/clipper/scripts/python/check_url_exists.py --url "{{ $json.url }}"
+python3 ${WORKING_DIR}/scripts/python/check_url_exists.py --url "{{ $json.url }}"
 ```
 
 ### Other Scripts

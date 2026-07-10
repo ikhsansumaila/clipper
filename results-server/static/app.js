@@ -1,6 +1,7 @@
 let allFiles = [];
     let currentFilter = 'all';
     let lastRenderedHash = '';
+    let currentWatchFile = null;
 
     const videoExts = ['mp4', 'webm', 'mkv', 'avi', 'mov', 'flv', 'wmv'];
     const audioExts = ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a', 'wma'];
@@ -89,11 +90,13 @@ let allFiles = [];
         renderFiles(filtered);
     }
 
-    function setFilter(filter, btn) {
+    function setFilter(filter) {
         currentFilter = filter;
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
         filterFiles();
+    }
+
+    function handleSearchKey(event) {
+        if (event.key === 'Enter') filterFiles();
     }
 
     function renderFiles(files) {
@@ -127,7 +130,7 @@ let allFiles = [];
             }
 
             return `
-                <div class="file-card" onclick="openPreview('${encodeURIComponent(f.name)}', '${type}', '${formatSize(f.size)}', '${formatDate(f.modified)}')">
+                <div class="file-card" onclick="handleFileOpen('${encodeURIComponent(f.name)}', '${type}', '${formatSize(f.size)}', '${formatDate(f.modified)}')">
                     <div class="file-preview">${preview}</div>
                     <div class="file-info">
                         <div class="file-name" title="${f.name}">${f.name}</div>
@@ -139,6 +142,14 @@ let allFiles = [];
                 </div>
             `;
         }).join('');
+    }
+
+    function handleFileOpen(encodedName, type, size, date) {
+        if (type === 'video') {
+            openWatch(encodedName);
+            return;
+        }
+        openPreview(encodedName, type, size, date);
     }
 
     function openPreview(encodedName, type, size, date) {
@@ -196,6 +207,7 @@ let allFiles = [];
         document.getElementById('filesPanel').classList.toggle('active', tab === 'files');
         document.getElementById('progressPanel').classList.toggle('active', tab === 'progress');
         document.getElementById('historyPanel').classList.toggle('active', tab === 'history');
+        document.getElementById('watchPanel').classList.toggle('active', tab === 'watch');
 
         document.getElementById('tabFilesBtn').classList.toggle('active', tab === 'files');
         document.getElementById('tabProgressBtn').classList.toggle('active', tab === 'progress');
@@ -357,9 +369,104 @@ let allFiles = [];
         }, 5000);
     }
 
+
+function getVideoFiles() {
+    return allFiles.filter(f => getType(f.name) === 'video');
+}
+
+function getFileByEncodedName(encodedName) {
+    const name = decodeURIComponent(encodedName);
+    return allFiles.find(f => f.name === name);
+}
+
+function thumbUrlFor(name) {
+    return `/results/thumbs/${encodeURIComponent(name.replace(/\.mp4$/i, '.jpg'))}`;
+}
+
+function openWatch(encodedName) {
+    window.location.hash = `watch=${encodedName}`;
+    showWatch(encodedName);
+}
+
+function showWatch(encodedName) {
+    const file = getFileByEncodedName(encodedName);
+    if (!file) return;
+
+    currentWatchFile = file.name;
+    switchTab('watch');
+
+    const url = `/results/files/${encodeURIComponent(file.name)}`;
+    const player = document.getElementById('watchPlayer');
+    if (player.getAttribute('src') !== url) {
+        player.src = url;
+        player.load();
+        player.play().catch(() => {});
+    }
+
+    document.getElementById('watchTitle').textContent = file.name;
+    document.getElementById('watchMeta').textContent = `${formatSize(file.size || 0)} • ${formatDate(file.modified)}`;
+    const download = document.getElementById('watchDownload');
+    download.href = url;
+    download.download = file.name;
+    renderWatchPlaylist(file.name);
+}
+
+function renderWatchPlaylist(activeName) {
+    const list = document.getElementById('watchPlaylist');
+    const query = (document.getElementById('watchSearchInput')?.value || '').toLowerCase().trim();
+    const videos = getVideoFiles()
+        .filter(f => !query || f.name.toLowerCase().includes(query))
+        .sort((a, b) => new Date(b.modified) - new Date(a.modified));
+    if (videos.length === 0) {
+        list.innerHTML = `<div class="watch-empty">${query ? 'Tidak ada video yang cocok.' : 'Belum ada video.'}</div>`;
+        return;
+    }
+    list.innerHTML = videos.map(f => {
+        const encoded = encodeURIComponent(f.name);
+        return `<div class="watch-item ${f.name === activeName ? 'active' : ''}" onclick="openWatch('${encoded}')">
+            <div class="watch-thumb"><img src="${thumbUrlFor(f.name)}" onerror="this.onerror=null;this.parentElement.innerHTML='🎬';" alt="${f.name}"></div>
+            <div>
+                <div class="watch-item-title" title="${f.name}">${f.name}</div>
+                <div class="watch-item-meta">${formatSize(f.size || 0)} • ${formatDate(f.modified)}</div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function backToResults() {
+    history.pushState('', document.title, window.location.pathname + window.location.search);
+    currentWatchFile = null;
+    const player = document.getElementById('watchPlayer');
+    player.pause();
+    player.removeAttribute('src');
+    player.load();
+    switchTab('files');
+}
+
+async function copyWatchLink() {
+    if (!currentWatchFile) return;
+    const url = `${window.location.origin}${window.location.pathname}#watch=${encodeURIComponent(currentWatchFile)}`;
+    try {
+        await navigator.clipboard.writeText(url);
+        alert('Link video sudah dicopy.');
+    } catch (e) {
+        prompt('Copy link ini:', url);
+    }
+}
+
+function handleHashRoute() {
+    const hash = window.location.hash || '';
+    if (!hash.startsWith('#watch=')) return;
+    const encodedName = hash.slice('#watch='.length);
+    if (allFiles.length === 0) return;
+    showWatch(encodedName);
+}
+
     // Init
-    fetchFiles();
+    fetchFiles().then(handleHashRoute);
     // Auto refresh every 30 seconds
     // setInterval(fetchFiles, 30000);
     // setInterval(() => { if (document.getElementById('progressPanel').classList.contains('active')) fetchState();
     //     if (document.getElementById('historyPanel').classList.contains('active')) fetchHistory(); }, 10000);
+
+window.addEventListener('hashchange', handleHashRoute);

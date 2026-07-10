@@ -204,12 +204,7 @@ class ResultsHandler(SimpleHTTPRequestHandler):
         mime_type = mimetypes.guess_type(str(filepath))[0] or "application/octet-stream"
         size = filepath.stat().st_size
 
-        self.send_response(200)
-        self.send_header("Content-Type", mime_type)
-        self.send_header("Content-Length", str(size))
-        self.send_header("Accept-Ranges", "bytes")
-
-        # Allow range requests for video seeking
+        # Allow range requests for smooth video seeking
         range_header = self.headers.get("Range")
         if range_header and range_header.startswith("bytes="):
             try:
@@ -218,12 +213,16 @@ class ResultsHandler(SimpleHTTPRequestHandler):
                 start = int(start_str) if start_str else 0
                 end = int(end_str) if end_str else size - 1
                 end = min(end, size - 1)
+                if start < 0 or start >= size or end < start:
+                    self.send_error(416)
+                    return
                 length = end - start + 1
 
                 self.send_response(206)
-                self.send_header("Content-Range", f"bytes {start}-{end}/{size}")
-                self.send_header("Content-Length", str(length))
                 self.send_header("Content-Type", mime_type)
+                self.send_header("Content-Length", str(length))
+                self.send_header("Accept-Ranges", "bytes")
+                self.send_header("Content-Range", f"bytes {start}-{end}/{size}")
                 self.end_headers()
 
                 with open(filepath, "rb") as f:
@@ -233,6 +232,10 @@ class ResultsHandler(SimpleHTTPRequestHandler):
             except (ValueError, IndexError):
                 pass
 
+        self.send_response(200)
+        self.send_header("Content-Type", mime_type)
+        self.send_header("Content-Length", str(size))
+        self.send_header("Accept-Ranges", "bytes")
         self.end_headers()
         with open(filepath, "rb") as f:
             while True:

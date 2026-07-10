@@ -59,84 +59,92 @@
             font-weight: 600;
         }
 
-        /* Search & Filter */
-        .controls {
-            max-width: 1200px;
-            margin: 1.5rem auto;
+        /* YouTube-style Search & Filters */
+        .youtube-toolbar {
+            max-width: 1400px;
+            margin: 1.25rem auto 1rem;
             padding: 0 2rem;
-            display: flex;
+            display: grid;
+            grid-template-columns: minmax(280px, 1fr) auto;
             gap: 1rem;
+            align-items: center;
+        }
+
+        .youtube-search {
+            display: flex;
+            max-width: none;
+            width: 100%;
+            justify-self: stretch;
+            background: #0f0f13;
+            border: 1px solid #2a2a3e;
+            border-radius: 999px;
+            overflow: hidden;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .youtube-search:focus-within {
+            border-color: #a78bfa;
+            box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.12);
+        }
+
+        .youtube-search input {
+            flex: 1;
+            min-width: 0;
+            padding: 0.8rem 1.15rem;
+            background: transparent;
+            border: 0;
+            color: #e4e4e7;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .search-btn {
+            padding: 0 1.25rem;
+            background: #1f2937;
+            border: 0;
+            border-left: 1px solid #2a2a3e;
+            color: #e4e4e7;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background .2s, color .2s;
+        }
+
+        .search-btn:hover { background: #2a2a3e; color: #fff; }
+
+        .youtube-filters {
+            display: flex;
+            gap: .75rem;
+            justify-content: flex-end;
             flex-wrap: wrap;
         }
 
-        .search-box {
-            flex: 1;
-            min-width: 200px;
-            position: relative;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 0.7rem 1rem 0.7rem 2.5rem;
+        .filter-select, .sort-select {
+            padding: 0.72rem 1rem;
             background: #1a1a2e;
             border: 1px solid #2a2a3e;
-            border-radius: 10px;
-            color: #e4e4e7;
-            font-size: 0.9rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .search-box input:focus { border-color: #a78bfa; }
-
-        .search-box::before {
-            content: "🔍";
-            position: absolute;
-            left: 0.8rem;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 0.85rem;
-        }
-
-        .filter-btn {
-            padding: 0.7rem 1.2rem;
-            background: #1a1a2e;
-            border: 1px solid #2a2a3e;
-            border-radius: 10px;
+            border-radius: 999px;
             color: #a1a1aa;
             font-size: 0.85rem;
+            outline: none;
             cursor: pointer;
-            transition: all 0.2s;
         }
 
-        .filter-btn:hover, .filter-btn.active {
+        .filter-select:hover, .sort-select:hover,
+        .filter-select:focus, .sort-select:focus {
             border-color: #a78bfa;
-            color: #a78bfa;
-            background: rgba(167, 139, 250, 0.1);
-        }
-
-        /* Sort */
-        .sort-select {
-            padding: 0.7rem 1rem;
-            background: #1a1a2e;
-            border: 1px solid #2a2a3e;
-            border-radius: 10px;
-            color: #a1a1aa;
-            font-size: 0.85rem;
-            outline: none;
-            cursor: pointer;
+            color: #e4e4e7;
         }
 
         /* Grid */
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 0 2rem 2rem;
         }
 
         .file-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 1rem;
         }
 
@@ -387,7 +395,7 @@
 
         /* Navigation */
         .nav-tabs {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 1.25rem auto 0;
             padding: 0 2rem;
             display: flex;
@@ -499,8 +507,107 @@
         @media (max-width: 640px) {
             .header { padding: 1rem; }
             .header h1 { font-size: 1.2rem; }
-            .controls { padding: 0 1rem; }
+            .youtube-toolbar { padding: 0 1rem; }
+            .youtube-filters { width: 100%; }
+            .filter-select, .sort-select { flex: 1; min-width: 140px; }
             .container { padding: 0 1rem 1rem; }
             .file-grid { grid-template-columns: 1fr; }
             .modal { margin: 1rem; }
         }
+
+
+/* YouTube Mini Watch Page */
+.watch-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1.5rem 2rem 2rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 1.5rem;
+}
+.watch-main, .watch-sidebar {
+    background: #1a1a2e;
+    border: 1px solid #2a2a3e;
+    border-radius: 16px;
+    overflow: hidden;
+}
+.watch-main { padding: 1rem; }
+.watch-sidebar { padding: 1rem; align-self: start; max-height: calc(100vh - 180px); overflow-y: auto; }
+.watch-sidebar h3 { font-size: 1rem; margin-bottom: 1rem; color: #f4f4f5; }
+.watch-back {
+    margin-bottom: 1rem;
+    padding: .55rem .9rem;
+    background: #111827;
+    color: #a1a1aa;
+    border: 1px solid #2a2a3e;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.watch-back:hover { color: #e4e4e7; border-color: #a78bfa; }
+.watch-player-wrap {
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+}
+#watchPlayer { width: 100%; height: 100%; display: block; background: #000; }
+.watch-title { font-size: 1.25rem; margin: 1rem 0 .35rem; color: #f4f4f5; line-height: 1.3; word-break: break-word; }
+.watch-meta { color: #71717a; font-size: .85rem; margin-bottom: 1rem; }
+.watch-actions { display: flex; gap: .75rem; flex-wrap: wrap; }
+.watch-btn {
+    padding: .55rem .9rem;
+    background: linear-gradient(135deg, rgba(167,139,250,.25), rgba(96,165,250,.18));
+    border: 1px solid rgba(167,139,250,.35);
+    color: #e4e4e7;
+    border-radius: 8px;
+    text-decoration: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: .85rem;
+}
+.watch-btn:hover { border-color: #a78bfa; }
+
+.watch-sidebar-search { margin-bottom: 1rem; }
+.watch-sidebar-search input {
+    width: 100%;
+    padding: .72rem .9rem;
+    background: #0f0f13;
+    border: 1px solid #2a2a3e;
+    border-radius: 999px;
+    color: #e4e4e7;
+    outline: none;
+    font-size: .85rem;
+}
+.watch-sidebar-search input:focus {
+    border-color: #a78bfa;
+    box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.12);
+}
+.watch-empty { color:#71717a; font-size:.85rem; padding:.75rem; }
+
+.watch-playlist { display: grid; gap: .75rem; }
+.watch-item {
+    display: grid;
+    grid-template-columns: 126px minmax(0, 1fr);
+    gap: .75rem;
+    padding: .5rem;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all .2s;
+}
+.watch-item:hover, .watch-item.active { background: #111827; border-color: #2a2a3e; }
+.watch-item.active { border-color: #a78bfa; }
+.watch-thumb { aspect-ratio: 16/9; background: #0f0f13; border-radius: 8px; overflow: hidden; display: flex; align-items:center; justify-content:center; }
+.watch-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.watch-item-title { color: #e4e4e7; font-size: .83rem; font-weight: 700; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.watch-item-meta { color: #71717a; font-size: .75rem; margin-top: .35rem; }
+@media (max-width: 960px) {
+    .youtube-toolbar { grid-template-columns: 1fr; }
+    .youtube-search { max-width: none; }
+    .youtube-filters { justify-content: flex-start; }
+    .watch-container { grid-template-columns: 1fr; padding: 1rem; }
+    .watch-sidebar { max-height: none; }
+}
+@media (max-width: 520px) {
+    .watch-item { grid-template-columns: 110px minmax(0, 1fr); }
+}

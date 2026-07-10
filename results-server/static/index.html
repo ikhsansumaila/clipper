@@ -31,20 +31,26 @@
 
 <div class="tab-panel active" id="filesPanel">
 
-<div class="controls">
-    <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Cari file..." oninput="filterFiles()">
+<div class="youtube-toolbar">
+    <div class="youtube-search">
+        <input type="text" id="searchInput" placeholder="Search video atau file..." onkeydown="handleSearchKey(event)">
+        <button class="search-btn" onclick="filterFiles()">🔍 Search</button>
     </div>
-    <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">Semua</button>
-    <button class="filter-btn" data-filter="video" onclick="setFilter('video', this)">🎬 Video</button>
-    <button class="filter-btn" data-filter="audio" onclick="setFilter('audio', this)">🎵 Audio</button>
-    <button class="filter-btn" data-filter="image" onclick="setFilter('image', this)">🖼️ Image</button>
-    <select class="sort-select" id="sortSelect" onchange="filterFiles()">
-        <option value="newest">Terbaru</option>
-        <option value="oldest">Terlama</option>
-        <option value="name">Nama A-Z</option>
-        <option value="size">Ukuran</option>
-    </select>
+    <div class="youtube-filters">
+        <select class="filter-select" id="typeFilterSelect" onchange="setFilter(this.value)">
+            <option value="all">Semua tipe</option>
+            <option value="video">🎬 Video</option>
+            <option value="audio">🎵 Audio</option>
+            <option value="image">🖼️ Image</option>
+            <option value="other">📄 Other</option>
+        </select>
+        <select class="sort-select" id="sortSelect" onchange="filterFiles()">
+            <option value="newest">Terbaru</option>
+            <option value="oldest">Terlama</option>
+            <option value="name">Nama A-Z</option>
+            <option value="size">Ukuran</option>
+        </select>
+    </div>
 </div>
 
 <div class="container">
@@ -78,6 +84,30 @@
             <p>Memuat history...</p>
         </div>
         <div id="historyContent"></div>
+    </div>
+</div>
+
+<div class="tab-panel" id="watchPanel">
+    <div class="watch-container">
+        <main class="watch-main">
+            <button class="watch-back" onclick="backToResults()">← Kembali ke Results</button>
+            <div class="watch-player-wrap">
+                <video id="watchPlayer" controls autoplay playsinline></video>
+            </div>
+            <h2 id="watchTitle" class="watch-title">Pilih video</h2>
+            <div id="watchMeta" class="watch-meta"></div>
+            <div class="watch-actions">
+                <button class="watch-btn" onclick="copyWatchLink()">🔗 Copy Link</button>
+                <a class="watch-btn" id="watchDownload" href="#" download>⬇ Download</a>
+            </div>
+        </main>
+        <aside class="watch-sidebar">
+            <h3>Video Lainnya</h3>
+            <div class="watch-sidebar-search">
+                <input type="text" id="watchSearchInput" placeholder="Cari video lain..." oninput="renderWatchPlaylist(currentWatchFile)">
+            </div>
+            <div id="watchPlaylist" class="watch-playlist"></div>
+        </aside>
     </div>
 </div>
 

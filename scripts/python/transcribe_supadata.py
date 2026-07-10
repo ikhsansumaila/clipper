@@ -100,7 +100,7 @@ def transcribe_supadata():
         raise ValueError(f"Struktur JSON tidak dikenali atau kosong. Hasil mentah: {result_data}")
 
     # 4. Simpan ke format .txt dengan timestamp
-    print("✅ Data lirik berhasil diambil. Menyusun file txt...")
+    print("✅ Data script berhasil diambil. Menyusun file txt...")
     with open(transcript_path, "w", encoding="utf-8") as f:
         for chunk in content_list:
             # Hapus karakter enter (\n dan \r) dan ganti dengan spasi
@@ -128,25 +128,11 @@ if __name__ == "__main__":
     try:
         cm = CheckpointManager()
 
-        # 1. BACA URL DARI FILE TXT (DARI n8n)
-        # current_url = ""
-        # if os.path.exists(config.URL_FILE):
-        #     with open(config.URL_FILE, "r", encoding="utf-8") as file:
-        #         current_url = file.read().strip()
-
-        # 2. INISIALISASI CHECKPOINT
-        # URL akan otomatis masuk ke state.json di tahap ini
-        # cm.initialize(url=current_url)
-
-        # # 3. UPDATE STATUS STAGE 1 (DOWNLOAD VIA n8n)
-        # if not cm.is_completed(config.STAGE_DOWNLOAD):
-        #     print(f"[{config.STAGE_DOWNLOAD}] Video sudah di-download oleh n8n. Mencatat ke Checkpoint...")
-        #     cm.update_stage(config.STAGE_DOWNLOAD, "completed", method="n8n_wget")
-            
-        #     # Catat juga lokasi file video asli
-        #     cm.update_path("source_video", config.SOURCE_VIDEO_FILE)
-
-        # 4. JALANKAN PROSES TRANSKRIP
+        # Inisialisasi/reset checkpoint sudah dilakukan di check_url_exists.py 
+        # saat menghasilkan "found" atau di download_file.py saat "not_found".
+        state = cm.get_state() or {}
+        
+        # JALANKAN PROSES TRANSKRIP
         cm.run_stage(config.STAGE_TRANSCRIBE, transcribe_supadata)
 
     except Exception as e:

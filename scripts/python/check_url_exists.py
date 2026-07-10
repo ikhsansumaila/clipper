@@ -24,26 +24,49 @@ import config
 def check_url_exists(url: str) -> str:
     """
     Mengecek apakah URL sudah ada di history.json.
-    
-    Args:
-        url: URL yang akan dicari
-    
-    Returns:
-        "found" jika URL ada, "not_found" jika tidak ada
+    Jika ada (reclip), langsung update state.json dengan path file lama
+    agar tahap selanjutnya (transcribe, director, dsb) menggunakan file yang benar.
     """
     history_file = config.HISTORY_FILE
     
-    # Cek apakah file ada
     if not os.path.exists(history_file):
         return "not_found"
     
-    # Baca history.json dan cek kecocokan URL
     try:
         with open(history_file, "r") as f:
             history = json.load(f)
-            # Cek di setiap entry apakah video_url cocok
             for entry in history:
                 if entry.get("video_url") == url:
+                    video_title = entry.get("video_title")
+                    
+                    # === FOUND! SETUP STATE UNTUK RECLIP ===
+                    from checkpoint_manager import CheckpointManager
+                    cm = CheckpointManager()
+                    
+                    source_dir = os.path.join(config.BASE_DIR, "source")
+                    new_source = os.path.join(source_dir, f"{video_title}.mp4")
+                    new_transcript = os.path.join(source_dir, f"{video_title}.txt")
+                    
+                    # Buat state.json baru khusus untuk reclip video ini
+                    state = {
+                        "video_id": "", 
+                        "url": url,
+                        "global_status": "in_progress",
+                        "paths": {
+                            "source_video": new_source,
+                            "transcript": new_transcript
+                        },
+                        "stages": {
+                            config.STAGE_DOWNLOAD: {"status": "completed"},
+                            config.STAGE_TRANSCRIBE: {"status": "completed"},
+                            config.STAGE_DIRECTOR_ANALYSIS: {"status": "pending"},
+                            config.STAGE_CUT_VIDEO: {"status": "pending"},
+                            config.STAGE_ADD_CAPTION: {"status": "pending"}
+                        }
+                    }
+                    cm._write_data(state)
+                    # =======================================
+                    
                     return "found"
             return "not_found"
     except Exception as e:

@@ -46,14 +46,40 @@ class CheckpointManager:
                 print("🔄 Mereset file state.json secara otomatis...", file=sys.stderr)
                 data = None  # Mengubah data menjadi None akan memicu pembuatan ulang di bawah
             elif saved_url and url and saved_url == url:
-                # Cek jika stage terakhir sudah selesai
-                if data.get("stages", {}).get(config.LAST_STAGE, {}).get("status") == "completed":
-                    print("🔄 Proses untuk URL ini sudah selesai sepenuhnya. Mereset stage mulai dari 3_director_analysis...", file=sys.stderr)
-                    if "stages" not in data:
-                        data["stages"] = {}
-                    for stage in [config.STAGE_DIRECTOR_ANALYSIS, config.STAGE_CUT_VIDEO, config.STAGE_ADD_CAPTION]:
-                        data["stages"][stage] = {"status": "pending"}
-                    self._write_data(data)
+                # URL sama = reclip. Selalu reset stage 3, 4, 5 ke pending
+                # agar pipeline berjalan ulang dari director analysis.
+                print("🔄 URL sama terdeteksi (reclip). Mereset stage 3-5 ke pending...", file=sys.stderr)
+                if "stages" not in data:
+                    data["stages"] = {}
+                for stage in [config.STAGE_DIRECTOR_ANALYSIS, config.STAGE_CUT_VIDEO, config.STAGE_ADD_CAPTION]:
+                    data["stages"][stage] = {"status": "pending"}
+                    
+                # Hapus path hasil dari stage 3, 4, 5 agar bersih
+                if "paths" not in data:
+                    data["paths"] = {}
+                for p_key in ["director_cut", "cut_video", "final_video"]:
+                    data["paths"].pop(p_key, None)
+
+                # Update paths source_video & transcript berdasarkan
+                # video_title di history.json, karena saat reclip download
+                # di-skip dan path lama bisa menunjuk ke file yang salah.
+                history = self._read_history()
+                video_title = None
+                for entry in history:
+                    if entry.get("video_url") == url:
+                        video_title = entry.get("video_title")
+                        break
+                
+                if video_title:
+                    source_dir = os.path.join(config.BASE_DIR, "source")
+                    new_source = os.path.join(source_dir, f"{video_title}.mp4")
+                    new_transcript = os.path.join(source_dir, f"{video_title}.txt")
+                    data["paths"]["source_video"] = new_source
+                    data["paths"]["transcript"] = new_transcript
+                    print(f"📂 Paths diupdate dari history:\n   source_video: {new_source}\n   transcript:   {new_transcript}", file=sys.stderr)
+                        
+                data["global_status"] = "in_progress"
+                self._write_data(data)
             elif not saved_url and url:
                 # Jika URL lama kosong (mungkin file corrupt), reset juga
                 data = None

@@ -32,7 +32,6 @@ services:
     volumes:
       - ./output/results:/data/results:ro
       - ./output/temp:/data/temp:ro
-      - ./state.json:/data/base/state.json:ro
-      - ./history.json:/data/base/history.json:ro
+      - .:/data/base:ro
     env_file:
       - .env

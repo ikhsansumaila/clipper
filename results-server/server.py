@@ -39,6 +39,10 @@ class ResultsHandler(SimpleHTTPRequestHandler):
             self.serve_thumb(path[8:])
         elif path.startswith("/results/thumbs/"):
             self.serve_thumb(path[16:])
+        elif path.startswith("/static/"):
+            self.serve_static(path[8:])
+        elif path.startswith("/results/static/"):
+            self.serve_static(path[16:])
         else:
             # Serve index.html for root and any other path
             self.serve_index()
@@ -236,6 +240,20 @@ class ResultsHandler(SimpleHTTPRequestHandler):
                 if not chunk:
                     break
                 self.wfile.write(chunk)
+
+    def serve_static(self, filename):
+        filepath = STATIC_DIR / filename
+        if not filepath.exists() or not filepath.is_file():
+            self.send_error(404)
+            return
+
+        try:
+            filepath.resolve().relative_to(STATIC_DIR.resolve())
+        except ValueError:
+            self.send_error(403)
+            return
+
+        self._send_file_content(filepath)
 
     def serve_index(self):
         index_path = STATIC_DIR / "index.html"

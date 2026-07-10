@@ -48,5 +48,37 @@ In your configured Discord channel, mention the bot and include a YouTube link:
 
 The bot will reply indicating that the video is being processed, and hand the link off to the n8n pipeline.
 
+## Python Scripts
+
+Located in `scripts/python/`, these scripts handle various video processing tasks and can be called from n8n via Execute Command nodes:
+
+### check_url_exists.py
+Checks if a YouTube URL has already been processed by looking it up in `history.json`.
+
+**Usage:**
+```bash
+python3 scripts/python/check_url_exists.py --url "https://www.youtube.com/watch?v=..."
+```
+
+**Output:**
+- `found` - if the URL exists in history
+- `not_found` - if the URL is new
+
+**n8n Integration:**
+```bash
+python3 /home/ubuntu/clipper/scripts/python/check_url_exists.py --url "{{ $json.url }}"
+```
+
+### Other Scripts
+- `download_file.py` - Download video files from URLs
+- `transcribe.py` - Transcribe audio using Whisper
+- `transcribe_supadata.py` - Alternative transcription service
+- `cut_video.py` - Cut/trim video segments
+- `director.py` - Director/editor for video processing
+- `add_caption.py` - Add captions to videos
+- `checkpoint_manager.py` - Manage processing checkpoints
+- `config.py` - Shared configuration constants
+
 ## Recent Updates
+- **check_url_exists.py:** New script to check URL existence in history.json, replacing bash grep approach for n8n SSH nodes
 - **Discord Bridge Fix:** The `discord-bridge.js` was updated to properly check for bot mentions before processing messages, preventing both production and staging bots from responding simultaneously.

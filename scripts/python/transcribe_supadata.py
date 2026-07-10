@@ -13,16 +13,36 @@ def transcribe_supadata():
     if not config.SUPADATA_API_KEY:
         raise ValueError("SUPADATA_API_KEY tidak ditemukan di environment variables!")
 
-    # 1. Ambil URL langsung dari Checkpoint Manager
     cm = CheckpointManager()
-    state = cm.get_state()
+    state = cm.get_state() or {}
+    
     video_url = state.get("url")
 
     if not video_url:
         raise ValueError("URL video tidak ditemukan di file Checkpoint (state.json).")
 
+    # Ambil lokasi file source video
+    source_video = state.get("paths", {}).get("source_video")
+    if not source_video:
+        # Fallback jika tidak ada di paths, tapi idealnya harus ada
+        transcript_path = config.TRANSCRIPT_FILE
+    else:
+        # /path/to/Video.mp4 -> /path/to/Video.txt
+        base_path = os.path.splitext(source_video)[0]
+        transcript_path = f"{base_path}.txt"
+
+    # Jika transkrip sudah pernah dibuat di path tersebut (caching)
+    if os.path.exists(transcript_path):
+        print(f"✅ Transkrip sudah ada di: {transcript_path}. Menggunakan yang sudah ada.")
+        return {
+            "provider": "supadata (cached)",
+            "paths": {
+                "transcript": transcript_path
+            }
+        }
+
     # 2. Persiapan request ke API
-    os.makedirs(os.path.dirname(config.TRANSCRIPT_FILE), exist_ok=True)
+    os.makedirs(os.path.dirname(transcript_path), exist_ok=True)
     headers = {"x-api-key": config.SUPADATA_API_KEY, "Content-Type": "application/json"}
     params = {
         "url": video_url,
@@ -81,7 +101,7 @@ def transcribe_supadata():
 
     # 4. Simpan ke format .txt dengan timestamp
     print("✅ Data lirik berhasil diambil. Menyusun file txt...")
-    with open(config.TRANSCRIPT_FILE, "w", encoding="utf-8") as f:
+    with open(transcript_path, "w", encoding="utf-8") as f:
         for chunk in content_list:
             # Hapus karakter enter (\n dan \r) dan ganti dengan spasi
             text = chunk.get("text", "").replace("\n", " ").replace("\r", " ").strip()
@@ -93,13 +113,13 @@ def transcribe_supadata():
             
             f.write(f"[{start_sec:.2f} - {end_sec:.2f}] {text}\n")
 
-    print(f"🎉 SUKSES! File transcript berhasil dibuat di: {config.TRANSCRIPT_FILE}")
+    print(f"🎉 SUKSES! File transcript berhasil dibuat di: {transcript_path}")
 
     # 5. Kembalikan data untuk dicatat di Checkpoint
     return {
         "provider": "supadata",
         "paths": {
-            "transcript": config.TRANSCRIPT_FILE
+            "transcript": transcript_path
         }
     }
 
@@ -109,22 +129,22 @@ if __name__ == "__main__":
         cm = CheckpointManager()
 
         # 1. BACA URL DARI FILE TXT (DARI n8n)
-        current_url = ""
-        if os.path.exists(config.URL_FILE):
-            with open(config.URL_FILE, "r", encoding="utf-8") as file:
-                current_url = file.read().strip()
+        # current_url = ""
+        # if os.path.exists(config.URL_FILE):
+        #     with open(config.URL_FILE, "r", encoding="utf-8") as file:
+        #         current_url = file.read().strip()
 
         # 2. INISIALISASI CHECKPOINT
         # URL akan otomatis masuk ke state.json di tahap ini
-        cm.initialize(url=current_url)
+        # cm.initialize(url=current_url)
 
-        # 3. UPDATE STATUS STAGE 1 (DOWNLOAD VIA n8n)
-        if not cm.is_completed(config.STAGE_DOWNLOAD):
-            print(f"[{config.STAGE_DOWNLOAD}] Video sudah di-download oleh n8n. Mencatat ke Checkpoint...")
-            cm.update_stage(config.STAGE_DOWNLOAD, "completed", method="n8n_wget")
+        # # 3. UPDATE STATUS STAGE 1 (DOWNLOAD VIA n8n)
+        # if not cm.is_completed(config.STAGE_DOWNLOAD):
+        #     print(f"[{config.STAGE_DOWNLOAD}] Video sudah di-download oleh n8n. Mencatat ke Checkpoint...")
+        #     cm.update_stage(config.STAGE_DOWNLOAD, "completed", method="n8n_wget")
             
-            # Catat juga lokasi file video asli
-            cm.update_path("source_video", config.SOURCE_VIDEO_FILE)
+        #     # Catat juga lokasi file video asli
+        #     cm.update_path("source_video", config.SOURCE_VIDEO_FILE)
 
         # 4. JALANKAN PROSES TRANSKRIP
         cm.run_stage(config.STAGE_TRANSCRIBE, transcribe_supadata)

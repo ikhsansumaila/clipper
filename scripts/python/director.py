@@ -7,10 +7,10 @@ from checkpoint_manager import CheckpointManager
 
 def director():
     cm = CheckpointManager()
-    state = cm.get_state()
+    state = cm.get_state() or {}
     
     # Ambil lokasi file transkrip dari tahapan sebelumnya
-    transcript_path = state["paths"].get("transcript")
+    transcript_path = state.get("paths", {}).get("transcript")
 
     # 1. Membaca transkrip
     print("Membaca transkrip dan menghubungi mihankids AI...")
@@ -21,7 +21,8 @@ def director():
     # 2. BACA HISTORY DAN SIAPKAN INSTRUKSI TAMBAHAN
     # ==================================================
     video_url = state.get("url")
-    history_clips = cm.get_history(video_url)
+    history_data = cm.get_history(video_url)
+    history_clips = history_data.get("clip_data", [])
     history_prompt = ""
 
     if history_clips:
@@ -94,9 +95,8 @@ def director():
 
     # 1. SIMPAN KE HISTORY
     # Menyimpan hasil AI ke history.json (otomatis dibatasi 20 per URL)
-    if video_url:
-        print(f"Mencatat {len(ai_result)} klip ke dalam history...")
-        cm.add_history(video_url, ai_result)
+    print(f"Mencatat klip ke dalam history...")
+    cm.add_history(video_url, ai_result)
 
     # (Opsional tapi sangat disarankan) 
     # Menambahkan lokasi file director-cut.json ke dalam Checkpoint paths

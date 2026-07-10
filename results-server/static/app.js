@@ -306,31 +306,47 @@ let allFiles = [];
 
     function renderHistory(data) {
         const content = document.getElementById('historyContent');
-        const keys = Object.keys(data || {});
-        if (keys.length === 0) {
+        
+        // Data sekarang berupa array of objects
+        if (!data || !Array.isArray(data) || data.length === 0) {
             content.innerHTML = `<div class="empty-state"><div class="icon">📭</div><h2>Belum ada history</h2><p>Data clip history belum tersedia.</p></div>`;
             return;
         }
-        const groups = keys.map(url => {
-            const items = Array.isArray(data[url]) ? data[url] : [];
-            const cards = items.map((c, i) => `
+
+        let html = '<div class="history-list">';
+        
+        data.forEach(item => {
+            const videoTitle = item.video_title || '';
+            const videoUrl = item.video_url || '';
+            const clips = Array.isArray(item.clip_data) ? item.clip_data : [];
+            
+            if (clips.length === 0) return;
+            
+            const cards = clips.map((c, i) => `
                 <div class="history-item">
                     <div class="history-item-title">Clip ${i+1}: ${c.title || 'Tanpa Judul'}</div>
                     <div class="history-item-meta"><span>⏱️ ${fmtTime(c.start)} - ${fmtTime(c.end)}</span></div>
                     <div class="history-item-reason">${c.reason || ''}</div>
                 </div>`).join('');
-            return `
-
-            <div class="history-group">
-                <div class="history-group-header">
-                    <span class="yt-icon">▶</span>
-                    <span class="history-group-url"><a href="${url}" target="_blank">${url}</a></span>
-                    <button class="action-btn" onclick="triggerReclip('${url}', this)">✂️ Buat Clip Baru</button>
-                </div>
-                ${cards || '<div style="color:#a1a1aa;font-size:0.85rem">Tidak ada clips</div>'}
-            </div>`;
-        }).join('');
-        content.innerHTML = `<div class="history-list">${groups}</div>`;
+                
+            html += `
+                <div class="history-group">
+                    <div class="history-group-header">
+                        <span class="yt-icon">▶</span>
+                        <span class="history-group-url">${videoTitle ? `<strong>${videoTitle}</strong> — ` : ''}<a href="${videoUrl}" target="_blank">${videoUrl || 'URL tidak tersedia'}</a></span>
+                        ${videoUrl ? `<button class="action-btn" onclick="triggerReclip('${videoUrl}', this)">✂️ Buat Clip Baru</button>` : ''}
+                    </div>
+                    ${cards}
+                </div>`;
+        });
+        
+        html += '</div>';
+        
+        if (html === '<div class="history-list"></div>') {
+             content.innerHTML = `<div class="empty-state"><div class="icon">📭</div><h2>Belum ada history</h2><p>Data clip history belum tersedia.</p></div>`;
+        } else {
+             content.innerHTML = html;
+        }
     }
 
 

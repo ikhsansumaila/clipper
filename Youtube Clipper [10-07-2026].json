@@ -73,8 +73,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        -464,
-        496
+        -416,
+        -528
       ],
       "id": "146b2258-8d4e-40a0-a673-34492f2da221",
       "name": "Download Video"
@@ -112,8 +112,8 @@
       "type": "n8n-nodes-base.ssh",
       "typeVersion": 1,
       "position": [
-        -128,
-        496
+        -32,
+        -560
       ],
       "id": "9fdf368d-92d9-43f9-8098-524c9264de38",
       "name": "Write file to disk",
@@ -196,26 +196,6 @@
     },
     {
       "parameters": {
-        "command": "=if grep -qF \"{{ $json.url }}\" {{ $env.WORKING_DIR }}/output/temp/video_url.txt; then\n    echo \"found\"\nelse\n    echo \"not_found\"\nfi",
-        "cwd": "/home/ubuntu/clipper/output/temp"
-      },
-      "type": "n8n-nodes-base.ssh",
-      "typeVersion": 1,
-      "position": [
-        -640,
-        176
-      ],
-      "id": "143b761c-d8e0-44b0-8ab4-5f50163f0297",
-      "name": "Check Cached Video",
-      "credentials": {
-        "sshPassword": {
-          "id": "MgbMMqMuDGo53Xqa",
-          "name": "SSH Password account"
-        }
-      }
-    },
-    {
-      "parameters": {
         "conditions": {
           "options": {
             "caseSensitive": true,
@@ -241,7 +221,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -464,
+        -448,
         176
       ],
       "id": "50f559db-2094-4d5a-a66d-aabfe8a84970",
@@ -257,46 +237,17 @@
           "cachedResultName": "YouTube Scraper (streamers/youtube-scraper)",
           "cachedResultUrl": "https://console.apify.com/actors/h7sDV53CddomktSi5/input"
         },
-        "customBody": "={\n  \"startUrls\": [\n    {\n      \"url\": \"{{ $('Get URL from message').item.json.url }}\"\n    }\n  ]\n}"
-      },
-      "type": "@apify/n8n-nodes-apify.apify",
-      "typeVersion": 1,
-      "position": [
-        -480,
-        -544
-      ],
-      "id": "5d5b3dd9-9afe-47f2-b440-0dbe04e5568c",
-      "name": "Get video metadata",
-      "credentials": {
-        "apifyApi": {
-          "id": "M6Eqacl6hJSyqnyS",
-          "name": "Apify account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "Run actor and get dataset",
-        "actorSource": "store",
-        "actorId": {
-          "__rl": true,
-          "value": "G1dli5lUik9LaUH0N",
-          "mode": "list",
-          "cachedResultName": "YouTube Downloader (scraper_one/yt-downloader)",
-          "cachedResultUrl": "https://console.apify.com/actors/G1dli5lUik9LaUH0N/input"
-        },
-        "customBody": "={\n  \"videoUrls\": [\n    \"{{ $('Get URL from message').item.json.url }}\"\n  ],\n  \"audioOnly\": false\n}",
+        "customBody": "={\n  \"startUrls\": [\n    {\n      \"url\": \"{{ $('Get URL from message').item.json.url }}\"\n    }\n  ]\n}",
         "timeout": {}
       },
       "type": "@apify/n8n-nodes-apify.apify",
       "typeVersion": 1,
       "position": [
-        -976,
-        496
+        -1152,
+        -544
       ],
-      "id": "0b1456b2-d697-4cf7-bb08-8d6269ee9879",
-      "name": "Actor get download url",
-      "alwaysOutputData": true,
+      "id": "5d5b3dd9-9afe-47f2-b440-0dbe04e5568c",
+      "name": "Get video metadata",
       "credentials": {
         "apifyApi": {
           "id": "M6Eqacl6hJSyqnyS",
@@ -312,8 +263,8 @@
       "type": "n8n-nodes-base.ssh",
       "typeVersion": 1,
       "position": [
-        -16,
-        -64
+        176,
+        -544
       ],
       "id": "2f074efd-0449-4c44-a761-62b22933df85",
       "name": "Transcript text (LOCAL)",
@@ -582,7 +533,7 @@
       "typeVersion": 1,
       "position": [
         -960,
-        704
+        928
       ],
       "id": "e6d686b7-68ee-46f6-9519-5049a72c50bb",
       "name": "Get url download from VideoSailor",
@@ -590,6 +541,242 @@
         "videoSailorApi": {
           "id": "GaNi7Cb3efP5SyRX",
           "name": "VideoSailor account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6c69c575-06ad-4cbf-8e2c-ab3e9220e491",
+              "leftValue": "={{ $json.downloadUrl }}",
+              "rightValue": "found",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "d33fe635-cea4-4dab-8ba6-20420fa94b63",
+              "leftValue": "={{ $json.downloadUrl }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "2f1931e2-c139-4afa-87f0-ce3f8fb1518b",
+              "leftValue": "={{ $json }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "8d3d8f55-8a2e-471c-bfbc-9e9e9e9febcf",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -752,
+        496
+      ],
+      "id": "305aa232-b7d6-46fe-b7c7-66961cf6ffe9",
+      "name": "is url exist"
+    },
+    {
+      "parameters": {
+        "command": "=ulimit -v 3000000\n\nMIHAKIDS_AI_API_KEY=\"{{ $env.MIHAKIDS_AI_API_KEY }}\" timeout 600s python3 director.py\n\nif [ $? -eq 124 ]; then\n  echo \"Proses analisa director dihentikan paksa karena terlalu lama (Timeout).\"\n  exit 1\nfi",
+        "cwd": "/home/ubuntu/clipper/scripts/python/"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        192,
+        160
+      ],
+      "id": "9fc4a9c0-34b3-4cc4-b404-551fefff3dfa",
+      "name": "Analyze by Director",
+      "credentials": {
+        "sshPassword": {
+          "id": "MgbMMqMuDGo53Xqa",
+          "name": "SSH Password account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "command": "=echo \"{{ $('Get URL from message').item.json.url }}\" > video_url.txt",
+        "cwd": "/home/ubuntu/clipper/output/temp/"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        -944,
+        -528
+      ],
+      "id": "24e7363c-4fc4-456d-a4d4-70e956853f2f",
+      "name": "Write video url and title to txt",
+      "credentials": {
+        "sshPassword": {
+          "id": "MgbMMqMuDGo53Xqa",
+          "name": "SSH Password account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "command": "=if grep -qF \"{{ $json.url }}\" {{ $env.WORKING_DIR }}/output/temp/video_url.txt; then\n    echo \"found\"\nelse\n    echo \"not_found\"\nfi",
+        "cwd": "/home/ubuntu/clipper/output/temp"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        -1360,
+        -544
+      ],
+      "id": "143b761c-d8e0-44b0-8ab4-5f50163f0297",
+      "name": "Check Same Video URL",
+      "credentials": {
+        "sshPassword": {
+          "id": "MgbMMqMuDGo53Xqa",
+          "name": "SSH Password account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "command": "=python3 download_file.py --original_url \"{{ $('Get URL from message').item.json.url }}\" --download_url \"{{ $json.downloadUrl }}\" --title \"{{ $('Get Video Title').item.json.title }}\"",
+        "cwd": "/home/ubuntu/clipper/scripts/python/"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        688
+      ],
+      "id": "f42853fa-2cbf-4c31-bece-613b73b36efc",
+      "name": "Download",
+      "credentials": {
+        "sshPassword": {
+          "id": "MgbMMqMuDGo53Xqa",
+          "name": "SSH Password account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.supadata.ai/v1/metadata",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "={{ $('Get URL from message').item.json.url }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "sd_010859a0b0320f84f3eb76e05124a0ce"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -1168,
+        496
+      ],
+      "id": "da3bfcfa-2694-40ad-a583-ea6f1545d82e",
+      "name": "Get Video Title"
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorSource": "store",
+        "actorId": {
+          "__rl": true,
+          "value": "G1dli5lUik9LaUH0N",
+          "mode": "list",
+          "cachedResultName": "YouTube Downloader (scraper_one/yt-downloader)",
+          "cachedResultUrl": "https://console.apify.com/actors/G1dli5lUik9LaUH0N/input"
+        },
+        "customBody": "={\n  \"videoUrls\": [\n    \"{{ $('Get URL from message').item.json.url }}\"\n  ],\n  \"audioOnly\": false\n}",
+        "timeout": {}
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        -960,
+        704
+      ],
+      "id": "07853212-5a64-41a8-a419-6d94e1fb305e",
+      "name": "Get download url (API KEY 2)",
+      "alwaysOutputData": true,
+      "credentials": {
+        "apifyApi": {
+          "id": "7yHdSZZ8axeULodY",
+          "name": "SlaveRO Key"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorSource": "store",
+        "actorId": {
+          "__rl": true,
+          "value": "=G1dli5lUik9LaUH0N",
+          "mode": "id"
+        },
+        "customBody": "={\n  \"videoUrls\": [\n    \"{{ $('Get URL from message').item.json.url }}\"\n  ],\n  \"audioOnly\": false\n}"
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        -960,
+        496
+      ],
+      "id": "0b1456b2-d697-4cf7-bb08-8d6269ee9879",
+      "name": "Get download url",
+      "alwaysOutputData": true,
+      "credentials": {
+        "apifyApi": {
+          "id": "M6Eqacl6hJSyqnyS",
+          "name": "Apify account"
         }
       },
       "onError": "continueRegularOutput"
@@ -633,10 +820,10 @@
       "typeVersion": 2.3,
       "position": [
         -752,
-        496
+        928
       ],
-      "id": "305aa232-b7d6-46fe-b7c7-66961cf6ffe9",
-      "name": "is url exist"
+      "id": "3303f9d5-01fb-42d4-9bba-36cc23b2b667",
+      "name": "is url exist2"
     },
     {
       "parameters": {
@@ -667,6 +854,26 @@
                 "operation": "notEmpty",
                 "singleValue": true
               }
+            },
+            {
+              "id": "2f1931e2-c139-4afa-87f0-ce3f8fb1518b",
+              "leftValue": "={{ $json }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "8d3d8f55-8a2e-471c-bfbc-9e9e9e9febcf",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notExists",
+                "singleValue": true
+              }
             }
           ],
           "combinator": "and"
@@ -679,8 +886,8 @@
         -752,
         704
       ],
-      "id": "12c5149e-a2bd-4b35-bffb-71d55efd5a58",
-      "name": "is url exist1"
+      "id": "138fa132-e286-4255-9c5e-e14462a2d2c5",
+      "name": "is url exist3"
     },
     {
       "parameters": {
@@ -694,7 +901,7 @@
         160
       ],
       "id": "ab7766a2-de79-4382-80c4-12478ab59142",
-      "name": "Director Cut Video",
+      "name": "Cut Video",
       "alwaysOutputData": false,
       "credentials": {
         "sshPassword": {
@@ -706,71 +913,17 @@
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "https://api.videosailor.com/api/video",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "X-API-Key",
-              "value": "ait_c70829c9e3e87fb177c60148c03131ee6321985ec1ceec65f1fbed11b3c22b34"
-            }
-          ]
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "url",
-              "value": "={{ $json.url }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
-      "position": [
-        -32,
-        -544
-      ],
-      "id": "da3bfcfa-2694-40ad-a583-ea6f1545d82e",
-      "name": "HTTP Request"
-    },
-    {
-      "parameters": {
-        "command": "=ulimit -v 3000000\n\nMIHAKIDS_AI_API_KEY=\"{{ $env.MIHAKIDS_AI_API_KEY }}\" timeout 600s python3 director.py\n\nif [ $? -eq 124 ]; then\n  echo \"Proses analisa director dihentikan paksa karena terlalu lama (Timeout).\"\n  exit 1\nfi",
+        "command": "=python3 check_url_exists.py --url \"{{ $json.url }}\"",
         "cwd": "/home/ubuntu/clipper/scripts/python/"
       },
       "type": "n8n-nodes-base.ssh",
       "typeVersion": 1,
       "position": [
-        192,
-        160
+        -624,
+        176
       ],
-      "id": "9fc4a9c0-34b3-4cc4-b404-551fefff3dfa",
-      "name": "Analyze by Director",
-      "credentials": {
-        "sshPassword": {
-          "id": "MgbMMqMuDGo53Xqa",
-          "name": "SSH Password account"
-        }
-      },
-      "onError": "continueErrorOutput"
-    },
-    {
-      "parameters": {
-        "command": "=echo \"{{ $('Get URL from message').item.json.url }}\" > video_url.txt",
-        "cwd": "/home/ubuntu/clipper/output/temp/"
-      },
-      "type": "n8n-nodes-base.ssh",
-      "typeVersion": 1,
-      "position": [
-        -1184,
-        496
-      ],
-      "id": "24e7363c-4fc4-456d-a4d4-70e956853f2f",
-      "name": "Write video url and title to txt",
+      "id": "c5ae6f64-27f2-47f8-bd14-b5ce627327fd",
+      "name": "Check exist video",
       "credentials": {
         "sshPassword": {
           "id": "MgbMMqMuDGo53Xqa",
@@ -805,13 +958,7 @@
     },
     "Download Video": {
       "main": [
-        [
-          {
-            "node": "Write file to disk",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Request to AI mihankids": {
@@ -821,20 +968,14 @@
     },
     "Write file to disk": {
       "main": [
-        [
-          {
-            "node": "Transcript text (3rd Party)",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Get URL from message": {
       "main": [
         [
           {
-            "node": "Check Cached Video",
+            "node": "Check exist video",
             "type": "main",
             "index": 0
           }
@@ -859,17 +1000,6 @@
         ]
       ]
     },
-    "Check Cached Video": {
-      "main": [
-        [
-          {
-            "node": "is cached",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "is cached": {
       "main": [
         [
@@ -881,7 +1011,7 @@
         ],
         [
           {
-            "node": "Write video url and title to txt",
+            "node": "Get Video Title",
             "type": "main",
             "index": 0
           }
@@ -891,17 +1021,6 @@
     "Get video metadata": {
       "main": [
         []
-      ]
-    },
-    "Actor get download url": {
-      "main": [
-        [
-          {
-            "node": "is url exist",
-            "type": "main",
-            "index": 0
-          }
-        ]
       ]
     },
     "Transcript text (LOCAL)": {
@@ -973,14 +1092,14 @@
       "main": [
         [
           {
-            "node": "Download Video",
+            "node": "Download",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Get url download from VideoSailor",
+            "node": "Get download url (API KEY 2)",
             "type": "main",
             "index": 0
           }
@@ -991,18 +1110,18 @@
       "main": [
         [
           {
-            "node": "is url exist1",
+            "node": "is url exist2",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "is url exist1": {
+    "Analyze by Director": {
       "main": [
         [
           {
-            "node": "Download Video",
+            "node": "Cut Video",
             "type": "main",
             "index": 0
           }
@@ -1016,7 +1135,98 @@
         ]
       ]
     },
-    "Director Cut Video": {
+    "Write video url and title to txt": {
+      "main": [
+        []
+      ]
+    },
+    "Check Same Video URL": {
+      "main": [
+        []
+      ]
+    },
+    "Get Video Title": {
+      "main": [
+        [
+          {
+            "node": "Get download url",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get download url": {
+      "main": [
+        [
+          {
+            "node": "is url exist",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "is url exist2": {
+      "main": [
+        [
+          {
+            "node": "Download",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "if error testing mode",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get download url (API KEY 2)": {
+      "main": [
+        [
+          {
+            "node": "is url exist3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "is url exist3": {
+      "main": [
+        [
+          {
+            "node": "Download",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get url download from VideoSailor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download": {
+      "main": [
+        [
+          {
+            "node": "Transcript text (3rd Party)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cut Video": {
       "main": [
         [
           {
@@ -1034,29 +1244,11 @@
         ]
       ]
     },
-    "Analyze by Director": {
+    "Check exist video": {
       "main": [
         [
           {
-            "node": "Director Cut Video",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "if error testing mode",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Write video url and title to txt": {
-      "main": [
-        [
-          {
-            "node": "Actor get download url",
+            "node": "is cached",
             "type": "main",
             "index": 0
           }
@@ -1074,7 +1266,7 @@
     "timezone": "Asia/Hong_Kong",
     "callerPolicy": "workflowsFromSameOwner"
   },
-  "versionId": "7b95b4ab-a2e0-4462-bb56-a552193b11f3",
+  "versionId": "a5f3fb1a-287c-47ff-b82b-d19e051a248b",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "a3c2bfd93c2e2d41cda384d68ec5b960d371211309fa5996c744a480f07ddd54"

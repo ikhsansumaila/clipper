@@ -8,14 +8,22 @@ from checkpoint_manager import CheckpointManager
 
 
 def add_caption():
+    cm = CheckpointManager()
+    state = cm.get_state() or {}
+    
     # 1. Baca data potongan dari director-cut.json
     with open(config.DIRECTOR_CUT_FILE, "r") as f:
         cut_data = json.load(f)
         start_offset = float(cut_data["start"])
 
     # 2. Baca transkrip, filter, dan geser waktunya
+    transcript_path = state.get("paths", {}).get("transcript")
+    if not transcript_path or not os.path.exists(transcript_path):
+        # Fallback
+        transcript_path = config.TRANSCRIPT_FILE
+        
     new_srt_lines = []
-    with open(config.TRANSCRIPT_FILE, "r") as f:
+    with open(transcript_path, "r") as f:
         lines = f.readlines()
 
     def format_time(t):

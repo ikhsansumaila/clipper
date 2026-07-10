@@ -19,3 +19,8 @@ __pycache__/
 *.pyc
 .DS_Store
 *.log
+
+/source/*
+
+state.json
+history.json

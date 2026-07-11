@@ -4,18 +4,18 @@
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "YOUR_WEBHOOK_ID",
+        "path": "dummy-webhook-path-12345",
         "options": {}
       },
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        -1200,
+        -1152,
         176
       ],
       "id": "3b989b5c-2fed-47c5-96c1-8d7c604e389c",
       "name": "Webhook",
-      "webhookId": "YOUR_WEBHOOK_ID"
+      "webhookId": "dummy-webhook-path-12345"
     },
     {
       "parameters": {
@@ -53,7 +53,7 @@
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.3,
       "position": [
-        -1008,
+        -960,
         176
       ],
       "id": "b26b8aa9-1291-4bfd-ba3e-12ae075a9a96",
@@ -77,33 +77,8 @@
         -528
       ],
       "id": "146b2258-8d4e-40a0-a673-34492f2da221",
-      "name": "Download Video"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://YOUR_AI_API_ENDPOINT/v1/chat/completions",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpBearerAuth",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"kr/claude-sonnet-4.5\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"Anda adalah produser video Shorts dan TikTok profesional yang ahli dalam mencari momen viral dari sebuah percakapan.\\n\\nBerikut adalah data transkrip video YouTube beserta timestamp detiknya:\\n\\n{{ $json.stdout }}\\n\\nTugas Anda:\\n1. Analisis transkrip tersebut dan cari 1 momen atau kutipan yang paling menarik, emosional, kontroversial, atau memiliki potensi viral paling tinggi.\\n2. Batasi durasi potongan video antara 30 hingga 59 detik.\\n3. Berikan output dalam format JSON murni tanpa markdown, tanpa penjelasan, tanpa teks pembuka atau penutup.\\n4. Gunakan struktur berikut:\\n\\n```json\\n{\\n  \\\"start_time\\\": 12.5,\\n  \\\"end_time\\\": 45.0,\\n  \\\"mood\\\": \\\"motivasi\\\",\\n  \\\"reason\\\": \\\"Alasan singkat mengapa momen ini dipilih\\\"\\n}\\n```\\n\\nPilihan nilai untuk field `mood` hanya boleh salah satu dari:\\n- motivasi\\n- sedih\\n- lucu\\n- tegang\\n- edukasi\\n\\nPastikan output hanya berupa JSON yang valid.\"\n    }\n  ],\n  \"stream\": false\n}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
-      "position": [
-        -208,
-        -544
-      ],
-      "id": "952c1717-8594-4e21-9f0b-426385be155e",
-      "name": "Request to AI mihankids",
-      "credentials": {
-        "httpBearerAuth": {
-          "id": "YOUR_BEARER_TOKEN_ID",
-          "name": "Bearer Auth account"
-        }
-      }
+      "name": "Download Video",
+      "disabled": true
     },
     {
       "parameters": {
@@ -112,17 +87,18 @@
       "type": "n8n-nodes-base.ssh",
       "typeVersion": 1,
       "position": [
-        -32,
-        -560
+        -208,
+        -528
       ],
       "id": "9fdf368d-92d9-43f9-8098-524c9264de38",
       "name": "Write file to disk",
       "credentials": {
         "sshPassword": {
-          "id": "YOUR_SSH_CREDENTIAL_ID",
+          "id": "dummy-ssh-password-id",
           "name": "SSH Password account"
         }
-      }
+      },
+      "disabled": true
     },
     {
       "parameters": {
@@ -132,7 +108,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -816,
+        -768,
         176
       ],
       "id": "5f4f1588-8a50-4e2a-8453-5b9762bcc1ce",
@@ -140,8 +116,8 @@
     },
     {
       "parameters": {
-        "command": "=ulimit -v 3000000\n\ntimeout 600s python3 add_caption.py\n\nif [ $? -eq 124 ]; then\n  echo \"Proses add caption dihentikan paksa karena terlalu lama (Timeout).\"\n  exit 1\nfi",
-        "cwd": "/home/ubuntu/clipper/scripts/python"
+        "command": "=docker exec clipper_pipeline python3 run.py add_caption.py",
+        "cwd": "/home/ubuntu/clipper"
       },
       "type": "n8n-nodes-base.ssh",
       "typeVersion": 1,
@@ -154,45 +130,11 @@
       "alwaysOutputData": false,
       "credentials": {
         "sshPassword": {
-          "id": "YOUR_SSH_CREDENTIAL_ID",
+          "id": "dummy-ssh-password-id",
           "name": "SSH Password account"
         }
       },
       "onError": "continueErrorOutput"
-    },
-    {
-      "parameters": {
-        "resource": "message",
-        "guildId": {
-          "__rl": true,
-          "value": "YOUR_DISCORD_SERVER_ID",
-          "mode": "list",
-          "cachedResultName": "octavarium project",
-          "cachedResultUrl": "https://discord.com/channels/1520298651086356591"
-        },
-        "channelId": {
-          "__rl": true,
-          "value": "={{ $('Webhook').item.json.body.channelId }}",
-          "mode": "id"
-        },
-        "content": "=test after set env working dir {{ $json.stdout }}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.discord",
-      "typeVersion": 2,
-      "position": [
-        -672,
-        -544
-      ],
-      "id": "6c045313-3e7d-4e67-82bb-0fc4b547d1fc",
-      "name": "Send error clip video3",
-      "webhookId": "YOUR_WEBHOOK_ID",
-      "credentials": {
-        "discordBotApi": {
-          "id": "YOUR_DISCORD_BOT_ID",
-          "name": "Discord Bot account"
-        }
-      }
     },
     {
       "parameters": {
@@ -221,7 +163,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -448,
+        -368,
         176
       ],
       "id": "50f559db-2094-4d5a-a66d-aabfe8a84970",
@@ -243,17 +185,18 @@
       "type": "@apify/n8n-nodes-apify.apify",
       "typeVersion": 1,
       "position": [
-        -1152,
-        -544
+        -608,
+        -528
       ],
       "id": "5d5b3dd9-9afe-47f2-b440-0dbe04e5568c",
       "name": "Get video metadata",
       "credentials": {
         "apifyApi": {
-          "id": "YOUR_APIFY_API_ID",
+          "id": "dummy-apify-account-id",
           "name": "Apify account"
         }
-      }
+      },
+      "disabled": true
     },
     {
       "parameters": {
@@ -263,23 +206,24 @@
       "type": "n8n-nodes-base.ssh",
       "typeVersion": 1,
       "position": [
-        176,
-        -544
+        0,
+        -528
       ],
       "id": "2f074efd-0449-4c44-a761-62b22933df85",
       "name": "Transcript text (LOCAL)",
       "credentials": {
         "sshPassword": {
-          "id": "YOUR_SSH_CREDENTIAL_ID",
+          "id": "dummy-ssh-password-id",
           "name": "SSH Password account"
         }
       },
+      "disabled": true,
       "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "command": "=ulimit -v 3000000\n\nSUPADATA_API_KEY=\"{{ $env.SUPADATA_API_KEY }}\" timeout 600s python3 transcribe_supadata.py\n\nif [ $? -eq 124 ]; then\n  echo \"Proses transkrip dihentikan paksa karena terlalu lama (Timeout).\"\n  exit 1\nfi",
-        "cwd": "/home/ubuntu/clipper/scripts/python/"
+        "command": "=docker exec clipper_pipeline python3 run.py transcribe_supadata.py",
+        "cwd": "/home/ubuntu/clipper"
       },
       "type": "n8n-nodes-base.ssh",
       "typeVersion": 1,
@@ -291,7 +235,7 @@
       "name": "Transcript text (3rd Party)",
       "credentials": {
         "sshPassword": {
-          "id": "YOUR_SSH_CREDENTIAL_ID",
+          "id": "dummy-ssh-password-id",
           "name": "SSH Password account"
         }
       },
@@ -302,19 +246,19 @@
         "resource": "message",
         "guildId": {
           "__rl": true,
-          "value": "YOUR_DISCORD_SERVER_ID",
+          "value": "1234567890123456789",
           "mode": "list",
           "cachedResultName": "octavarium project",
-          "cachedResultUrl": "https://discord.com/channels/1520298651086356591"
+          "cachedResultUrl": "https://discord.com/channels/1234567890123456789"
         },
         "channelId": {
           "__rl": true,
-          "value": "YOUR_DISCORD_CHANNEL_ID",
+          "value": "9876543210987654321",
           "mode": "list",
           "cachedResultName": "clipper",
-          "cachedResultUrl": "https://discord.com/channels/1520298651086356591/1520298728542441472"
+          "cachedResultUrl": "https://discord.com/channels/1234567890123456789/9876543210987654321"
         },
-        "content": "\ud83c\udf89 SUKSES! Clip Video sudah selesai!\nsilakan buka : https://YOUR_RESULTS_URL/results/",
+        "content": "\ud83c\udf89 SUKSES! Clip Video sudah selesai!\nsilakan buka : https://dummy.mihankids.my.id/results/",
         "options": {},
         "embeds": {
           "values": []
@@ -328,10 +272,10 @@
       ],
       "id": "10de6a49-8730-4205-ba0a-0dca7319722a",
       "name": "Send Success",
-      "webhookId": "YOUR_WEBHOOK_ID",
+      "webhookId": "dummy-webhook-id-67890",
       "credentials": {
         "discordBotApi": {
-          "id": "YOUR_DISCORD_BOT_ID",
+          "id": "dummy-discord-bot-1",
           "name": "Discord Bot account"
         }
       }
@@ -341,19 +285,19 @@
         "resource": "message",
         "guildId": {
           "__rl": true,
-          "value": "YOUR_DISCORD_SERVER_ID",
+          "value": "1234567890123456789",
           "mode": "list",
           "cachedResultName": "octavarium project",
-          "cachedResultUrl": "https://discord.com/channels/1520298651086356591"
+          "cachedResultUrl": "https://discord.com/channels/1234567890123456789"
         },
         "channelId": {
           "__rl": true,
-          "value": "YOUR_DISCORD_CHANNEL_ID_2",
+          "value": "1122334455667788990",
           "mode": "list",
           "cachedResultName": "clipper-test",
-          "cachedResultUrl": "https://discord.com/channels/1520298651086356591/1521079793775411230"
+          "cachedResultUrl": "https://discord.com/channels/1234567890123456789/1122334455667788990"
         },
-        "content": "\ud83c\udf89 SUKSES! Clip Video sudah selesai!\nsilakan buka : https://YOUR_RESULTS_URL/results/",
+        "content": "\ud83c\udf89 SUKSES! Clip Video sudah selesai!\nsilakan buka : https://dummy.mihankids.my.id/results/",
         "options": {}
       },
       "type": "n8n-nodes-base.discord",
@@ -364,10 +308,10 @@
       ],
       "id": "569530d1-1052-4b02-98f3-b5ac3016bcaf",
       "name": "Send Success Test",
-      "webhookId": "YOUR_WEBHOOK_ID",
+      "webhookId": "dummy-webhook-id-67890",
       "credentials": {
         "discordBotApi": {
-          "id": "YOUR_DISCORD_BOT_ID_2",
+          "id": "dummy-discord-bot-2",
           "name": "Discord Bot account 2"
         }
       }
@@ -392,10 +336,10 @@
         "resource": "message",
         "guildId": {
           "__rl": true,
-          "value": "YOUR_DISCORD_SERVER_ID",
+          "value": "1234567890123456789",
           "mode": "list",
           "cachedResultName": "octavarium project",
-          "cachedResultUrl": "https://discord.com/channels/1520298651086356591"
+          "cachedResultUrl": "https://discord.com/channels/1234567890123456789"
         },
         "channelId": {
           "__rl": true,
@@ -413,10 +357,10 @@
       ],
       "id": "a130ee88-6c4c-4003-9018-42b15a09e415",
       "name": "Send error",
-      "webhookId": "YOUR_WEBHOOK_ID",
+      "webhookId": "dummy-webhook-id-67890",
       "credentials": {
         "discordBotApi": {
-          "id": "YOUR_DISCORD_BOT_ID",
+          "id": "dummy-discord-bot-1",
           "name": "Discord Bot account"
         }
       }
@@ -426,17 +370,17 @@
         "resource": "message",
         "guildId": {
           "__rl": true,
-          "value": "YOUR_DISCORD_SERVER_ID",
+          "value": "1234567890123456789",
           "mode": "list",
           "cachedResultName": "octavarium project",
-          "cachedResultUrl": "https://discord.com/channels/1520298651086356591"
+          "cachedResultUrl": "https://discord.com/channels/1234567890123456789"
         },
         "channelId": {
           "__rl": true,
-          "value": "YOUR_DISCORD_CHANNEL_ID_2",
+          "value": "1122334455667788990",
           "mode": "list",
           "cachedResultName": "clipper-test",
-          "cachedResultUrl": "https://discord.com/channels/1520298651086356591/1521079793775411230"
+          "cachedResultUrl": "https://discord.com/channels/1234567890123456789/1122334455667788990"
         },
         "content": "={{ $json.stdout }}",
         "options": {}
@@ -449,10 +393,10 @@
       ],
       "id": "e59b588e-dd91-4713-9ecf-865ce7a07c46",
       "name": "Send error test",
-      "webhookId": "YOUR_WEBHOOK_ID",
+      "webhookId": "dummy-webhook-id-67890",
       "credentials": {
         "discordBotApi": {
-          "id": "YOUR_DISCORD_BOT_ID_2",
+          "id": "dummy-discord-bot-2",
           "name": "Discord Bot account 2"
         }
       }
@@ -539,7 +483,7 @@
       "name": "Get url download from VideoSailor",
       "credentials": {
         "videoSailorApi": {
-          "id": "YOUR_VIDEOSAILOR_API_ID",
+          "id": "dummy-videosailor-account-id",
           "name": "VideoSailor account"
         }
       },
@@ -611,8 +555,8 @@
     },
     {
       "parameters": {
-        "command": "=ulimit -v 3000000\n\nYOUR_AI_API_KEY=\"{{ $env.YOUR_AI_API_KEY }}\" timeout 600s python3 director.py\n\nif [ $? -eq 124 ]; then\n  echo \"Proses analisa director dihentikan paksa karena terlalu lama (Timeout).\"\n  exit 1\nfi",
-        "cwd": "/home/ubuntu/clipper/scripts/python/"
+        "command": "=docker exec clipper_pipeline python3 run.py director.py",
+        "cwd": "/home/ubuntu/clipper"
       },
       "type": "n8n-nodes-base.ssh",
       "typeVersion": 1,
@@ -624,7 +568,7 @@
       "name": "Analyze by Director",
       "credentials": {
         "sshPassword": {
-          "id": "YOUR_SSH_CREDENTIAL_ID",
+          "id": "dummy-ssh-password-id",
           "name": "SSH Password account"
         }
       },
@@ -632,60 +576,20 @@
     },
     {
       "parameters": {
-        "command": "=echo \"{{ $('Get URL from message').item.json.url }}\" > video_url.txt",
-        "cwd": "/home/ubuntu/clipper/output/temp/"
+        "command": "=docker exec clipper_pipeline python3 run.py download_file.py --original_url \"{{ $('Get URL from message').item.json.url }}\" --download_url \"{{ $json.downloadUrl }}\" --title \"{{ $('Get Video Title').item.json.title }}\" --timeout 1200",
+        "cwd": "/home/ubuntu/clipper/"
       },
       "type": "n8n-nodes-base.ssh",
       "typeVersion": 1,
       "position": [
-        -944,
-        -528
-      ],
-      "id": "24e7363c-4fc4-456d-a4d4-70e956853f2f",
-      "name": "Write video url and title to txt",
-      "credentials": {
-        "sshPassword": {
-          "id": "YOUR_SSH_CREDENTIAL_ID",
-          "name": "SSH Password account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "command": "=if grep -qF \"{{ $json.url }}\" {{ $env.WORKING_DIR }}/output/temp/video_url.txt; then\n    echo \"found\"\nelse\n    echo \"not_found\"\nfi",
-        "cwd": "/home/ubuntu/clipper/output/temp"
-      },
-      "type": "n8n-nodes-base.ssh",
-      "typeVersion": 1,
-      "position": [
-        -1360,
-        -544
-      ],
-      "id": "143b761c-d8e0-44b0-8ab4-5f50163f0297",
-      "name": "Check Same Video URL",
-      "credentials": {
-        "sshPassword": {
-          "id": "YOUR_SSH_CREDENTIAL_ID",
-          "name": "SSH Password account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "command": "=python3 download_file.py --original_url \"{{ $('Get URL from message').item.json.url }}\" --download_url \"{{ $json.downloadUrl }}\" --title \"{{ $('Get Video Title').item.json.title }}\"",
-        "cwd": "/home/ubuntu/clipper/scripts/python/"
-      },
-      "type": "n8n-nodes-base.ssh",
-      "typeVersion": 1,
-      "position": [
-        -208,
+        -352,
         688
       ],
       "id": "f42853fa-2cbf-4c31-bece-613b73b36efc",
       "name": "Download",
       "credentials": {
         "sshPassword": {
-          "id": "YOUR_SSH_CREDENTIAL_ID",
+          "id": "dummy-ssh-password-id",
           "name": "SSH Password account"
         }
       }
@@ -698,7 +602,7 @@
           "parameters": [
             {
               "name": "url",
-              "value": "={{ $('Get URL from message').item.json.url }}"
+              "value": "={{ $json.url }}"
             }
           ]
         },
@@ -707,7 +611,7 @@
           "parameters": [
             {
               "name": "x-api-key",
-              "value": "YOUR_SUPADATA_API_KEY"
+              "value": "sd_010859a0b0320f84f3eb76e05124a0ce"
             }
           ]
         },
@@ -716,7 +620,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        -1168,
+        -1136,
         496
       ],
       "id": "da3bfcfa-2694-40ad-a583-ea6f1545d82e",
@@ -747,7 +651,7 @@
       "alwaysOutputData": true,
       "credentials": {
         "apifyApi": {
-          "id": "YOUR_APIFY_API_ID_2",
+          "id": "7yHdSZZ8axeULodY",
           "name": "SlaveRO Key"
         }
       },
@@ -775,7 +679,7 @@
       "alwaysOutputData": true,
       "credentials": {
         "apifyApi": {
-          "id": "YOUR_APIFY_API_ID",
+          "id": "dummy-apify-account-id",
           "name": "Apify account"
         }
       },
@@ -891,8 +795,8 @@
     },
     {
       "parameters": {
-        "command": "ulimit -v 3000000\n\ntimeout 600s python3 cut_video.py\n\nif [ $? -eq 124 ]; then\n  echo \"Proses cut video dihentikan paksa karena terlalu lama (Timeout).\"\n  exit 1\nfi",
-        "cwd": "/home/ubuntu/clipper/scripts/python/"
+        "command": "docker exec clipper_pipeline python3 run.py cut_video.py",
+        "cwd": "/home/ubuntu/clipper"
       },
       "type": "n8n-nodes-base.ssh",
       "typeVersion": 1,
@@ -905,7 +809,7 @@
       "alwaysOutputData": false,
       "credentials": {
         "sshPassword": {
-          "id": "YOUR_SSH_CREDENTIAL_ID",
+          "id": "dummy-ssh-password-id",
           "name": "SSH Password account"
         }
       },
@@ -913,20 +817,20 @@
     },
     {
       "parameters": {
-        "command": "=python3 check_url_exists.py --url \"{{ $json.url }}\"",
-        "cwd": "/home/ubuntu/clipper/scripts/python/"
+        "command": "=docker exec clipper_pipeline python3 run.py check_source_exists.py --url \"{{ $json.url }}\"",
+        "cwd": "/home/ubuntu/clipper"
       },
       "type": "n8n-nodes-base.ssh",
       "typeVersion": 1,
       "position": [
-        -624,
+        -560,
         176
       ],
       "id": "c5ae6f64-27f2-47f8-bd14-b5ce627327fd",
       "name": "Check exist video",
       "credentials": {
         "sshPassword": {
-          "id": "YOUR_SSH_CREDENTIAL_ID",
+          "id": "dummy-ssh-password-id",
           "name": "SSH Password account"
         }
       }
@@ -957,11 +861,6 @@
       ]
     },
     "Download Video": {
-      "main": [
-        []
-      ]
-    },
-    "Request to AI mihankids": {
       "main": [
         []
       ]
@@ -1135,16 +1034,6 @@
         ]
       ]
     },
-    "Write video url and title to txt": {
-      "main": [
-        []
-      ]
-    },
-    "Check Same Video URL": {
-      "main": [
-        []
-      ]
-    },
     "Get Video Title": {
       "main": [
         [
@@ -1266,7 +1155,7 @@
     "timezone": "Asia/Hong_Kong",
     "callerPolicy": "workflowsFromSameOwner"
   },
-  "versionId": "a5f3fb1a-287c-47ff-b82b-d19e051a248b",
+  "versionId": "19575f2a-963d-47bf-a0f0-2bad3ba6b761",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "a3c2bfd93c2e2d41cda384d68ec5b960d371211309fa5996c744a480f07ddd54"

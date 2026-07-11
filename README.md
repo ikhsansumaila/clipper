@@ -1,18 +1,45 @@
 # Clipper Project
 
-Clipper is an automated workflow system designed to capture YouTube videos via Discord, process them using n8n, and expose the results. It uses **Claude Sonnet 4.5** AI model to intelligently identify and extract the most viral moments from videos.
+Clipper is an automated workflow system designed to capture YouTube videos via Discord, process them using n8n, and expose the results. It uses an **AI model** (configurable) to intelligently identify and extract the most viral moments from videos.
 
 ## Features
 - **Discord Integration:** Mention `@your-bot` with a YouTube link in Discord to start the clipping process
-- **AI-Powered Analysis:** Uses Claude Sonnet 4.5 to find the most engaging 30-59 second moments
+- **AI-Powered Analysis:** Uses advanced LLMs to find the most engaging 30-59 second moments
 - **Automated Processing:** Transcribes, analyzes, cuts, and captions videos automatically
 - **Results Server:** Serves the processed clips on a dedicated web interface
 
 ## Architecture & Services
-The project runs via Docker Compose and consists of three main services:
+The project runs via Docker Compose and consists of four main services:
 1. **n8n_clipper:** The core n8n instance that handles the automation workflows.
 2. **discord-bridge:** A Node.js application that listens to Discord messages, responds to mentions, and forwards YouTube links to n8n webhooks.
-3. **clipper-results:** A Python-based server that serves the output files (clips).
+3. **clipper-pipeline:** A persistent Python 3.11 container with FFmpeg and AI libraries that acts as the execution engine for all video processing scripts.
+4. **clipper-results:** A Python-based server that serves the output files (clips) and provides the web UI dashboard.
+
+## Directory Structure
+The project is organized functionally to separate data, pipeline logic, and web services:
+
+```text
+/home/ubuntu/clipper/
+├── docker-compose.yml
+├── .env
+├── n8n_data/                # n8n database and settings
+├── data/                    # Unified I/O and State Layer
+│   ├── db/                  # state.json & history.json
+│   ├── source/              # Downloaded raw videos & transcripts
+│   ├── temp/                # Temporary processing files (cuts, subtitles)
+│   └── results/             # Final MP4 clips and thumbnails
+├── pipeline/                # Python Processing Engine
+│   ├── Dockerfile           # Installs FFmpeg, Python 3, ML dependencies
+│   ├── requirements.txt
+│   └── src/                 # All Python logic scripts (config, director, etc.)
+├── results-server/          # Web UI & API Server
+│   ├── Dockerfile
+│   ├── server.py
+│   └── static/              # HTML/CSS/JS for the dashboard
+└── discord-bridge/          # Discord Bot Service
+    ├── discord-bridge.js
+    └── package.json
+```
 
 ## Setup Instructions
 
@@ -33,7 +60,7 @@ Ensure you have the following variables properly set:
 - `N8N_WEBHOOK_URL` - Production webhook endpoint
 - `N8N_WEBHOOK_TEST_URL` - Staging webhook endpoint
 - `SUPADATA_API_KEY` - For video metadata queries
-- `MIHAKIDS_AI_API_KEY` - Bearer token for Claude Sonnet 4.5 API
+- `MIHAKIDS_AI_API_KEY` - Bearer token for your AI model inference (e.g., OpenAI, Claude, etc.)
 
 ### n8n Workflow Credentials
 
@@ -42,7 +69,7 @@ The n8n workflow requires the following credentials to be configured **inside n8
 | Credential Type | Purpose | Required | Notes |
 |---|---|---|---|
 | **SSH Password** | Execute Python scripts and server commands | ✅ Yes | Hostname, Username, and Password (or SSH key) |
-| **HTTP Bearer Auth** | Claude Sonnet 4.5 AI API requests | ✅ Yes | Bearer token for AI model inference |
+| **HTTP Bearer Auth** | AI API requests | ✅ Yes | Bearer token for AI model inference |
 | **Discord Bot API** | Send messages to Discord channels | ✅ Yes (×2) | One for production (`your-bot`), one for staging |
 | **Apify API** | YouTube metadata scraping & downloads | ✅ Yes (×2) | Primary and fallback API keys |
 | **VideoSailor API** | Alternative video download service | ⚠️ Optional | Fallback if Apify fails |
@@ -90,21 +117,38 @@ The bot will reply indicating that the video is being processed, and hand the li
 2. **n8n Workflow** processes the video:
    - Downloads the video using Apify API
    - Transcribes audio with Whisper
-   - Analyzes the transcript using **Claude Sonnet 4.5** AI model
+   - Analyzes the transcript using an **AI model** (via API)
    - Identifies the most viral moment (30-59 seconds)
    - Cuts the video and adds captions
 3. **Results Server** hosts the final clip for download
 
-## Python Scripts
+## Python Scripts (Pipeline Engine)
 
-Located in `$WORKING_DIR/scripts/python/`, these scripts handle various video processing tasks and can be called from n8n via Execute Command nodes:
+Located in `pipeline/src/`, these scripts handle various video processing tasks. They are executed securely inside the `clipper_pipeline` Docker container, keeping the host OS clean.
+
+### The Wrapper Executor (`run.py`)
+To prevent memory leaks and runaway processes, all scripts should be executed using the `run.py` wrapper. This script automatically enforces a virtual memory limit (`ulimit -v`) and a timeout.
+
+**Default limits applied by `run.py`:**
+- Memory Limit: 3,000,000 KB (approx 3GB)
+- Timeout: 600 seconds (10 minutes)
+
+If a process exceeds the timeout, it gracefully kills the script, outputs a clean timeout message, and exits with code 124.
+
+**n8n Execution Pattern:**
+Every Execute Command (SSH) node in n8n should follow this pattern:
+```bash
+docker exec clipper_pipeline python3 run.py [script_name.py] [arguments]
+```
+
+---
 
 ### check_url_exists.py
-Checks if a YouTube URL has already been processed by looking it up in `history.json`.
+Checks if a YouTube URL has already been processed by looking it up in `data/db/history.json`.
 
-**Usage:**
+**Usage (from host or via SSH in n8n):**
 ```bash
-python3 scripts/python/check_url_exists.py --url "https://www.youtube.com/watch?v=..."
+docker exec clipper_pipeline python3 run.py check_url_exists.py --url "https://www.youtube.com/watch?v=..."
 ```
 
 **Output:**
@@ -113,19 +157,28 @@ python3 scripts/python/check_url_exists.py --url "https://www.youtube.com/watch?
 
 **n8n Integration:**
 ```bash
-python3 ${WORKING_DIR}/scripts/python/check_url_exists.py --url "{{ $json.url }}"
+docker exec clipper_pipeline python3 run.py check_url_exists.py --url "{{ $json.url }}"
 ```
 
 ### Other Scripts
-- `download_file.py` - Download video files from URLs
-- `transcribe.py` - Transcribe audio using Whisper
-- `transcribe_supadata.py` - Alternative transcription service
-- `cut_video.py` - Cut/trim video segments
-- `director.py` - Director/editor for video processing
-- `add_caption.py` - Add captions to videos
-- `checkpoint_manager.py` - Manage processing checkpoints
-- `config.py` - Shared configuration constants
+Because the container's working directory is automatically set to `pipeline/src/`, you can call the rest of the scripts seamlessly from n8n using the wrapper:
+- `docker exec clipper_pipeline python3 run.py transcribe_supadata.py` - AI Transcription
+- `docker exec clipper_pipeline python3 run.py director.py` - LLM Analysis & Clip Selection
+- `docker exec clipper_pipeline python3 run.py cut_video.py` - Trim video segments via FFmpeg
+- `docker exec clipper_pipeline python3 run.py add_caption.py` - Render subtitles and thumbnails
+
+*You can also override the default limits per-node if needed:*
+```bash
+# Example: Allow add_caption to run up to 20 minutes
+docker exec clipper_pipeline python3 run.py add_caption.py --timeout 1200
+```
+
+*Helper modules:*
+- `checkpoint_manager.py` - Manage processing checkpoints and re-clips
+- `config.py` - Shared configuration and folder path definitions
 
 ## Recent Updates
-- **check_url_exists.py:** New script to check URL existence in history.json, replacing bash grep approach for n8n SSH nodes
-- **Discord Bridge Fix:** The `discord-bridge.js` was updated to properly check for bot mentions before processing messages, preventing both production and staging bots from responding simultaneously.
+- **Pipeline Dockerization:** Python scripts now run inside a dedicated `clipper_pipeline` container, isolating FFmpeg and AI dependencies from the host OS.
+- **Wrapper Executor (`run.py`):** Replaced manual bash `ulimit` and `timeout` logic with a clean Python wrapper for all n8n node executions.
+- **Directory Restructuring:** All output files, raw sources, and databases are now cleanly stored in the centralized `/data` directory.
+- **check_url_exists.py:** Script automatically builds a fresh `state.json` when triggering a re-clip for a known URL.

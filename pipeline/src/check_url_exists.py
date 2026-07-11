@@ -43,7 +43,7 @@ def check_url_exists(url: str) -> str:
                     from checkpoint_manager import CheckpointManager
                     cm = CheckpointManager()
                     
-                    source_dir = os.path.join(config.BASE_DIR, "source")
+                    source_dir = os.path.join(config.DATA_DIR, "source")
                     new_source = os.path.join(source_dir, f"{video_title}.mp4")
                     new_transcript = os.path.join(source_dir, f"{video_title}.txt")
                     

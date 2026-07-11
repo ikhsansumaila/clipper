@@ -8,25 +8,28 @@ import os
 SUPADATA_API_KEY = os.getenv("SUPADATA_API_KEY", "fallback_api_key_if_needed")
 SUPADATA_BASE_URL = "https://api.supadata.ai/v1"
 AI_API_KEY = os.getenv("MIHAKIDS_AI_API_KEY", "fallback_ai_key_if_needed")
-AI_API_ENDPOINT = "http://localhost:20128/v1/chat/completions"
+# Menggunakan host.docker.internal karena script berjalan di dalam container Docker.
+# host.docker.internal akan merujuk ke OS host (tempat OmniRoute/9router berjalan).
+AI_API_ENDPOINT = os.getenv("AI_API_ENDPOINT", "http://host.docker.internal:20128/v1/chat/completions")
 AI_MODEL_NAME = "mihan-high-providers"
 
 # ==========================================
 # 2. STRUKTUR DIREKTORI UTAMA
 # ==========================================
 # Cukup ubah BASE_DIR jika project dipindah ke server/folder lain
-BASE_DIR = "/home/ubuntu/clipper"
-TEMP_DIR = os.path.join(BASE_DIR, "output", "temp")
+BASE_DIR = os.getenv("WORKING_DIR", os.path.dirname(os.path.abspath(__file__)))
+DATA_DIR = os.path.join(BASE_DIR, "data")
+TEMP_DIR = os.path.join(DATA_DIR, "temp")
 
 # ==========================================
 # 3. FILE PATHS (STATE, HISTORY, I/O)
 # ==========================================
-STATE_FILE = os.path.join(BASE_DIR, "state.json")
-HISTORY_FILE = os.path.join(BASE_DIR, "history.json")
+STATE_FILE = os.path.join(DATA_DIR, "db", "state.json")
+HISTORY_FILE = os.path.join(DATA_DIR, "db", "history.json")
 DIRECTOR_CUT_FILE = os.path.join(TEMP_DIR, "director-cut.json")
 FINAL_CUT_VIDEO_FILE = os.path.join(TEMP_DIR, "final-cut.mp4")
 SUBS_FILE = os.path.join(TEMP_DIR, "subs.srt")
-RESULTS_DIR = os.path.join(BASE_DIR, "output", "results")
+RESULTS_DIR = os.path.join(DATA_DIR, "results")
 
 # ==========================================
 # 4. PENGATURAN APLIKASI (APP SETTINGS)

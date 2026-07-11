@@ -23,7 +23,7 @@ class CheckpointManager:
             with open(self.statefilepath, 'r', encoding='utf-8') as f:
                 return json.load(f)
         except json.JSONDecodeError:
-            print(f"Warning: File {self.statefilepath} korup.")
+            print(f"Warning: File {self.statefilepath} corrupt.")
             return None
 
     def _write_data(self, data):
@@ -71,7 +71,7 @@ class CheckpointManager:
                         break
                 
                 if video_title:
-                    source_dir = os.path.join(config.BASE_DIR, "source")
+                    source_dir = os.path.join(config.DATA_DIR, "source")
                     new_source = os.path.join(source_dir, f"{video_title}.mp4")
                     new_transcript = os.path.join(source_dir, f"{video_title}.txt")
                     data["paths"]["source_video"] = new_source

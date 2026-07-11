@@ -1,131 +1,136 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clipper Results</title>
-    <link rel="stylesheet" href="/results/static/styles.css">
+    <!-- External CSS & JS dengan parameter cache-busting -->
+    <link rel="stylesheet" href="static/styles.css?v=1.2">
 </head>
+
 <body>
 
-<div class="header">
-    <div class="header-content">
-        <h1><span class="icon">✂️</span> Clipper Results</h1>
-        <div style="display:flex;align-items:center;gap:1rem;">
-            <div class="stats">
-                <span>📁 <span class="num" id="totalFiles">0</span> files</span>
-                <span>💾 <span class="num" id="totalSize">0 B</span></span>
+    <div class="header">
+        <div class="header-content">
+            <h1><span class="icon">✂️</span> Clipper Results</h1>
+            <div style="display:flex;align-items:center;gap:1rem;">
+                <div class="stats">
+                    <span>📁 <span class="num" id="totalFiles">0</span> files</span>
+                    <span>💾 <span class="num" id="totalSize">0 B</span></span>
+                </div>
+                <button class="btn-refresh" onclick="refreshFiles()" id="refreshBtn">
+                    <span class="refresh-icon">🔄</span> Refresh
+                </button>
             </div>
-            <button class="btn-refresh" onclick="refreshFiles()" id="refreshBtn">
-                <span class="refresh-icon">🔄</span> Refresh
-            </button>
         </div>
     </div>
-</div>
 
-<div class="nav-tabs">
-    <button class="nav-tab active" id="tabFilesBtn" onclick="switchTab('files')">📁 Results</button>
-    <button class="nav-tab" id="tabProgressBtn" onclick="switchTab('progress')">📊 Stage Progress</button>
-    <button class="nav-tab" id="tabHistoryBtn" onclick="switchTab('history')">📜 History</button>
-</div>
-
-<div class="tab-panel active" id="filesPanel">
-
-<div class="youtube-toolbar">
-    <div class="youtube-search">
-        <input type="text" id="searchInput" placeholder="Search video atau file..." onkeydown="handleSearchKey(event)">
-        <button class="search-btn" onclick="filterFiles()">🔍 Search</button>
+    <div class="nav-tabs">
+        <button class="nav-tab active" id="tabFilesBtn" onclick="switchTab('files')">📁 Results</button>
+        <button class="nav-tab" id="tabProgressBtn" onclick="switchTab('progress')">📊 Stage Progress</button>
+        <button class="nav-tab" id="tabHistoryBtn" onclick="switchTab('history')">📜 History</button>
     </div>
-    <div class="youtube-filters">
-        <select class="filter-select" id="typeFilterSelect" onchange="setFilter(this.value)">
-            <option value="all">Semua tipe</option>
-            <option value="video">🎬 Video</option>
-            <option value="audio">🎵 Audio</option>
-            <option value="image">🖼️ Image</option>
-            <option value="other">📄 Other</option>
-        </select>
-        <select class="sort-select" id="sortSelect" onchange="filterFiles()">
-            <option value="newest">Terbaru</option>
-            <option value="oldest">Terlama</option>
-            <option value="name">Nama A-Z</option>
-            <option value="size">Ukuran</option>
-        </select>
-    </div>
-</div>
 
-<div class="container">
-    <div id="loading" class="loading" style="display:none;">
-        <div class="spinner"></div>
-        <p>Memuat file...</p>
-    </div>
-    <div class="file-grid" id="fileGrid"></div>
-    <div id="emptyState" class="empty-state" style="display:none;">
-        <div class="icon">📂</div>
-        <h2>Belum ada file</h2>
-        <p>File hasil clipper akan muncul di sini.</p>
-    </div>
-</div>
-</div>
+    <div class="tab-panel active" id="filesPanel">
 
-<div class="tab-panel" id="progressPanel">
-    <div class="container" style="padding-top:1.5rem;">
-        <div id="progressLoading" class="loading" style="display:none;">
-            <div class="spinner"></div>
-            <p>Memuat stage progress...</p>
-        </div>
-        <div id="progressContent"></div>
-    </div>
-</div>
-
-<div class="tab-panel" id="historyPanel">
-    <div class="container" style="padding-top:1.5rem;">
-        <div id="historyLoading" class="loading" style="display:none;">
-            <div class="spinner"></div>
-            <p>Memuat history...</p>
-        </div>
-        <div id="historyContent"></div>
-    </div>
-</div>
-
-<div class="tab-panel" id="watchPanel">
-    <div class="watch-container">
-        <main class="watch-main">
-            <button class="watch-back" onclick="backToResults()">← Kembali ke Results</button>
-            <div class="watch-player-wrap">
-                <video id="watchPlayer" controls autoplay playsinline></video>
+        <div class="youtube-toolbar">
+            <div class="youtube-search">
+                <input type="text" id="searchInput" placeholder="Search video atau file..."
+                    onkeydown="handleSearchKey(event)">
+                <button class="search-btn" onclick="filterFiles()">🔍 Search</button>
             </div>
-            <h2 id="watchTitle" class="watch-title">Pilih video</h2>
-            <div id="watchMeta" class="watch-meta"></div>
-            <div class="watch-actions">
-                <button class="watch-btn" onclick="copyWatchLink()">🔗 Copy Link</button>
-                <a class="watch-btn" id="watchDownload" href="#" download>⬇ Download</a>
+            <div class="youtube-filters">
+                <select class="filter-select" id="typeFilterSelect" onchange="setFilter(this.value)">
+                    <option value="all">Semua tipe</option>
+                    <option value="video">🎬 Video</option>
+                    <option value="audio">🎵 Audio</option>
+                    <option value="image">🖼️ Image</option>
+                    <option value="other">📄 Other</option>
+                </select>
+                <select class="sort-select" id="sortSelect" onchange="filterFiles()">
+                    <option value="newest">Terbaru</option>
+                    <option value="oldest">Terlama</option>
+                    <option value="name">Nama A-Z</option>
+                    <option value="size">Ukuran</option>
+                </select>
             </div>
-        </main>
-        <aside class="watch-sidebar">
-            <h3>Video Lainnya</h3>
-            <div class="watch-sidebar-search">
-                <input type="text" id="watchSearchInput" placeholder="Cari video lain..." oninput="renderWatchPlaylist(currentWatchFile)">
+        </div>
+
+        <div class="container">
+            <div id="loading" class="loading" style="display:none;">
+                <div class="spinner"></div>
+                <p>Memuat file...</p>
             </div>
-            <div id="watchPlaylist" class="watch-playlist"></div>
-        </aside>
-    </div>
-</div>
-
-<!-- Preview Modal -->
-<div class="modal-overlay" id="modal" onclick="closeModal(event)">
-    <div class="modal" onclick="event.stopPropagation()">
-        <div class="modal-header">
-            <h3 id="modalTitle">File</h3>
-            <button class="modal-close" onclick="closeModal()">&times;</button>
-        </div>
-        <div class="modal-body" id="modalBody"></div>
-        <div class="modal-footer">
-            <span class="meta" id="modalMeta"></span>
-            <a class="btn-download" id="modalDownload" href="#" download>⬇ Download</a>
+            <div class="file-grid" id="fileGrid"></div>
+            <div id="emptyState" class="empty-state" style="display:none;">
+                <div class="icon">📂</div>
+                <h2>Belum ada file</h2>
+                <p>File hasil clipper akan muncul di sini.</p>
+            </div>
         </div>
     </div>
-</div>
-<script src="/results/static/app.js"></script>
 
+    <div class="tab-panel" id="progressPanel">
+        <div class="container" style="padding-top:1.5rem;">
+            <div id="progressLoading" class="loading" style="display:none;">
+                <div class="spinner"></div>
+                <p>Memuat stage progress...</p>
+            </div>
+            <div id="progressContent"></div>
+        </div>
+    </div>
+
+    <div class="tab-panel" id="historyPanel">
+        <div class="container" style="padding-top:1.5rem;">
+            <div id="historyLoading" class="loading" style="display:none;">
+                <div class="spinner"></div>
+                <p>Memuat history...</p>
+            </div>
+            <div id="historyContent"></div>
+        </div>
+    </div>
+
+    <div class="tab-panel" id="watchPanel">
+        <div class="watch-container">
+            <main class="watch-main">
+                <button class="watch-back" onclick="backToResults()">← Kembali ke Results</button>
+                <div class="watch-player-wrap">
+                    <video id="watchPlayer" controls autoplay playsinline></video>
+                </div>
+                <h2 id="watchTitle" class="watch-title">Pilih video</h2>
+                <div id="watchMeta" class="watch-meta"></div>
+                <div class="watch-actions">
+                    <button class="watch-btn" onclick="copyWatchLink()">🔗 Copy Link</button>
+                    <a class="watch-btn" id="watchDownload" href="#" download>⬇ Download</a>
+                </div>
+            </main>
+            <aside class="watch-sidebar">
+                <h3>Video Lainnya</h3>
+                <div class="watch-sidebar-search">
+                    <input type="text" id="watchSearchInput" placeholder="Cari video lain..."
+                        oninput="renderWatchPlaylist(currentWatchFile)">
+                </div>
+                <div id="watchPlaylist" class="watch-playlist"></div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div class="modal-overlay" id="modal" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 id="modalTitle">File</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-footer">
+                <span class="meta" id="modalMeta"></span>
+                <a class="btn-download" id="modalDownload" href="#" download>⬇ Download</a>
+            </div>
+        </div>
+    </div>
+<script src="static/app.js?v=1.2"></script>
 </body>
+
 </html>

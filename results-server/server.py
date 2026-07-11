@@ -14,11 +14,10 @@ import discord_notif
 
 APP_DIR = Path(__file__).resolve().parent
 STATIC_DIR = Path(os.environ.get("STATIC_DIR", APP_DIR / "static"))
-RESULTS_DIR = Path(os.environ.get("RESULTS_DIR", "/data/results"))
-TEMP_DIR = Path(os.environ.get("TEMP_DIR", "/data/temp"))
-# BASE_DIR adalah root project clipper — tempat state.json & history.json berada
-# (dipindah dari output/temp sejak refactor config.py)
-BASE_DIR = Path(os.environ.get("BASE_DIR", "/data/base"))
+DATA_DIR = Path(os.environ.get("DATA_DIR", "/data"))
+RESULTS_DIR = DATA_DIR / "results"
+TEMP_DIR = DATA_DIR / "temp"
+DB_DIR = DATA_DIR / "db"
 PORT = 5680
 N8N_WEBHOOK_URL = os.environ.get("N8N_WEBHOOK_URL", "")
 # DISCORD_BOT_ID = os.environ.get("DISCORD_BOT_ID", "")
@@ -26,7 +25,9 @@ N8N_WEBHOOK_URL = os.environ.get("N8N_WEBHOOK_URL", "")
 
 class ResultsHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
-        path = unquote(self.path)
+        # Buang query parameters (mulai dari tanda '?') jika ada
+        raw_path = self.path.split('?')[0]
+        path = unquote(raw_path)
 
         if path in ("/api/files", "/results/api/files"):
             self.send_file_list()
@@ -126,7 +127,7 @@ class ResultsHandler(SimpleHTTPRequestHandler):
         self.wfile.write(data)
 
     def send_state(self):
-        state_file = BASE_DIR / "state.json"
+        state_file = DB_DIR / "state.json"
         
         if state_file.exists() and state_file.is_file():
             try:
@@ -151,7 +152,7 @@ class ResultsHandler(SimpleHTTPRequestHandler):
         self.wfile.write(data)
 
     def send_history(self):
-        history_file = BASE_DIR / "history.json"
+        history_file = DB_DIR / "history.json"
 
         if history_file.exists() and history_file.is_file():
             try:

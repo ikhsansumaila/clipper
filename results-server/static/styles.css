@@ -469,9 +469,22 @@
 
 
         /* History Panel */
-        .history-list { display: grid; gap: 1.5rem; max-height: calc(100vh - 320px); overflow-y: auto; padding-right: 0.5rem; }
-        .history-group { background: #1a1a2e; border: 1px solid #2a2a3e; border-radius: 14px; padding: 1.25rem; }
-        .history-group-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid #2a2a3e; font-weight: 700; color: #f4f4f5; }
+        .history-list { display: grid; gap: 1.5rem; padding-bottom: 2rem; }
+        .history-group { background: #1a1a2e; border: 1px solid #2a2a3e; border-radius: 14px; padding: 1.25rem; display: flex; flex-direction: column; max-height: calc(100vh - 280px); transition: max-height 0.3s ease; }
+        .history-group-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid #2a2a3e; font-weight: 700; color: #f4f4f5; flex-shrink: 0; cursor: pointer; user-select: none; transition: opacity 0.2s; }
+        .history-group-header:hover { opacity: 0.85; }
+        .history-group-content { overflow-y: auto; padding-right: 0.5rem; flex-grow: 1; transition: all 0.3s ease; }
+        
+        /* Collapse Logic */
+        .history-group.collapsed { max-height: 80px; overflow: hidden; padding-bottom: 0.5rem; }
+        .history-group.collapsed .history-group-content { opacity: 0; pointer-events: none; margin-top: -10px; }
+        .history-group.collapsed .history-group-header { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .collapse-icon { font-size: 0.7rem; color: #a1a1aa; transition: transform 0.3s ease; }
+        .history-group.collapsed .collapse-icon { transform: rotate(-90deg); }
+        
+        .history-group-content::-webkit-scrollbar { width: 6px; }
+        .history-group-content::-webkit-scrollbar-track { background: transparent; }
+        .history-group-content::-webkit-scrollbar-thumb { background: #2a2a3e; border-radius: 10px; }
         .history-group-header .yt-icon { color: #ef4444; font-size: 1.2rem; }
         .history-group-url a { color: #60a5fa; text-decoration: none; font-weight: 600; word-break: break-all; }
         .history-group-url a:hover { text-decoration: underline; }

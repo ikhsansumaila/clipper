@@ -11,6 +11,7 @@ def director():
     
     # Ambil lokasi file transkrip dari tahapan sebelumnya
     transcript_path = state.get("paths", {}).get("transcript")
+    print(f"📄 File transkrip ditemukan di: {transcript_path}")
 
     # 1. Membaca transkrip
     print("Membaca transkrip dan menghubungi mihankids AI...")
@@ -76,9 +77,9 @@ def director():
         "-H", "Content-Type: application/json",
         "-d", json.dumps(payload)
     ]
-
+    print(f"Menjalankan perintah: {' '.join(curl_cmd)}")
     result = subprocess.run(curl_cmd, capture_output=True, text=True)
-
+    print(f"Response dari AI diterima, memproses hasil... {result.stdout}")
     # 4. Parsing respon
     response_data = json.loads(result.stdout)
     content = response_data['choices'][0]['message']['content']

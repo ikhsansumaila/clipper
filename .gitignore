@@ -3,12 +3,15 @@ cookies.txt
 *.env
 
 # Mengabaikan folder node_modules hanya di dalam folder scripts
-/scripts/node_modules/
+*/node_modules/
 
-# --- Data Output & Cache ---
-# Jangan upload hasil video/audio/transkrip agar repo tetap ringan
-/output/*
-!/output/.gitkeep  # Opsional: biar folder 'output' tetap ada di git
+# --- Data Input, Output & Cache ---
+# Jangan upload source dan hasil video/audio/transkrip agar repo tetap ringan
+/data/*
+!/data/db/.gitkeep  # Opsional: biar folder 'db' tetap ada di git
+!/data/results/.gitkeep  # Opsional: biar folder 'results' tetap ada di git
+!/data/source/.gitkeep  # Opsional: biar folder 'source' tetap ada di git
+!/data/temp/.gitkeep  # Opsional: biar folder 'temp' tetap ada di git
 
 # --- Folder Database/Data Docker ---
 # n8n_data berisi database SQLite dan data internal n8n, jangan di-upload!
@@ -19,8 +22,3 @@ __pycache__/
 *.pyc
 .DS_Store
 *.log
-
-/source/*
-
-state.json
-history.json

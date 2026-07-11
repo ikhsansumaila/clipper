@@ -9,8 +9,6 @@ services:
       - .env
     volumes:
       - ./n8n_data:/home/node/.n8n
-      # Kita HANYA me-mount folder skrip untuk simpan output jika diperlukan nanti
-      - ./scripts:/home/node/scripts
 
   discord-bridge:
     image: node:20-alpine
@@ -19,9 +17,22 @@ services:
     env_file:
       - .env
     volumes:
-      - ./scripts:/app
+      - ./discord-bridge:/app
     working_dir: /app
     command: sh -c "npm install discord.js axios && node discord-bridge.js"
+
+  clipper-pipeline:
+    build: ./pipeline
+    container_name: clipper_pipeline
+    restart: always
+    user: "1000:1001"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - .:/home/ubuntu/clipper
+    env_file:
+      - .env
+    working_dir: /home/ubuntu/clipper/pipeline/src
 
   clipper-results:
     build: ./results-server
@@ -30,8 +41,6 @@ services:
     ports:
       - "5680:5680"
     volumes:
-      - ./output/results:/data/results:ro
-      - ./output/temp:/data/temp:ro
-      - .:/data/base:ro
+      - ./data:/data:ro
     env_file:
       - .env

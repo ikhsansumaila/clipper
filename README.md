@@ -60,7 +60,9 @@ Ensure you have the following variables properly set:
 - `N8N_WEBHOOK_URL` - Production webhook endpoint
 - `N8N_WEBHOOK_TEST_URL` - Staging webhook endpoint
 - `SUPADATA_API_KEY` - For video metadata queries
-- `MIHAKIDS_AI_API_KEY` - Bearer token for your AI model inference (e.g., OpenAI, Claude, etc.)
+- `AI_AGENT_API_ENDPOINT` - your AI agent enpoint. (e.g, https://api.openai.com/v1/chat/completions)
+- `AI_AGENT_API_KEY` - Bearer token for your AI model inference (e.g., OpenAI, Claude, etc.)
+- `AI_AGENT_MODEL_NAME` - your AI agent model name.
 
 ### n8n Workflow Credentials
 
@@ -157,7 +159,7 @@ docker exec clipper_pipeline python3 run.py check_url_exists.py --url "https://w
 
 **n8n Integration:**
 ```bash
-docker exec clipper_pipeline python3 run.py check_url_exists.py --url "{{ $json.url }}"
+docker exec clipper_pipeline python3 run.py check_source_exists.py --url "{{ $json.url }}"
 ```
 
 ### Other Scripts

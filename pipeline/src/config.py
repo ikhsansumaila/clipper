@@ -7,11 +7,11 @@ import os
 # agar tidak terekspos jika kode dibagikan, tapi bisa kamu hardcode untuk testing.
 SUPADATA_API_KEY = os.getenv("SUPADATA_API_KEY", "fallback_api_key_if_needed")
 SUPADATA_BASE_URL = "https://api.supadata.ai/v1"
-AI_API_KEY = os.getenv("MIHAKIDS_AI_API_KEY", "fallback_ai_key_if_needed")
+AI_AGENT_API_KEY = os.getenv("AI_AGENT_API_KEY", "fallback_ai_key_if_needed")
 # Menggunakan host.docker.internal karena script berjalan di dalam container Docker.
 # host.docker.internal akan merujuk ke OS host (tempat OmniRoute/9router berjalan).
-AI_API_ENDPOINT = os.getenv("AI_API_ENDPOINT", "http://host.docker.internal:20128/v1/chat/completions")
-AI_MODEL_NAME = "mihan-high-providers"
+AI_AGENT_API_ENDPOINT = os.getenv("AI_AGENT_API_ENDPOINT", "fallback_endpoint_if_needed")  # Contoh: "https://api.openai.com/v1/chat/completions"
+AI_AGENT_MODEL_NAME = os.getenv("AI_AGENT_MODEL_NAME", "fallback_model_name_if_needed")  # Contoh: "gpt-4o-mini"
 
 # ==========================================
 # 2. STRUKTUR DIREKTORI UTAMA
@@ -35,8 +35,8 @@ RESULTS_DIR = os.path.join(DATA_DIR, "results")
 # 4. PENGATURAN APLIKASI (APP SETTINGS)
 # ==========================================
 MAX_HISTORY_CLIPS = 20
-MIN_CLIP_DURATION = 1  # Durasi minimal klip (menit)
-MAX_CLIP_DURATION = 3  # Durasi maksimal klip (menit)
+MIN_CLIP_DURATION = 30  # Durasi minimal klip (detik)
+MAX_CLIP_DURATION = 120  # Durasi maksimal klip (detik)
 
 
 # ==========================================

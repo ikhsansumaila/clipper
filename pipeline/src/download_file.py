@@ -126,12 +126,10 @@ def main():
     original_url = args.original_url
     download_url = args.download_url
     title = args.title
-    output_path = f"/home/ubuntu/clipper/source/{title}.mp4"  # default
+    source_dir = os.path.join(config.DATA_DIR, "source")
+    output_path = f"{source_dir}/{title}.mp4"  # default
 
     cm = CheckpointManager()
-
-    cm.initialize(url=original_url)
-
     # Jalankan download via CheckpointManager agar stage 1_download
     # otomatis di-update di state.json (pending → in_progress → completed)
     cm.run_stage(

@@ -24,8 +24,8 @@ def transcribe_supadata():
     # Ambil lokasi file source video
     source_video = state.get("paths", {}).get("source_video")
     if not source_video:
-        # Fallback jika tidak ada di paths, tapi idealnya harus ada
-        transcript_path = config.TRANSCRIPT_FILE
+        # Jika source_video tidak ada, kemungkinan tahap download belum selesai atau gagal.
+        raise ValueError("Path source video tidak ditemukan di state.json. Pastikan tahap download sudah selesai.")
     else:
         # /path/to/Video.mp4 -> /path/to/Video.txt
         base_path = os.path.splitext(source_video)[0]

@@ -36,7 +36,7 @@ def limit_virtual_memory(max_virtual_memory_kb: int):
             max_vm_bytes = hard
             
         resource.setrlimit(resource.RLIMIT_AS, (max_vm_bytes, max_vm_bytes))
-        print(f"🔒 Virtual memory dibatasi hingga: {max_virtual_memory_kb:,} KB", file=sys.stderr)
+        # print(f"🔒 Virtual memory dibatasi hingga: {max_virtual_memory_kb:,} KB", file=sys.stderr)
     except Exception as e:
         print(f"⚠️ Peringatan: Gagal menyetel batasan memori. Error: {e}", file=sys.stderr)
 
@@ -62,7 +62,7 @@ def main():
     command = [sys.executable, script_path] + unknown_args
     
     script_base_name = os.path.basename(args.script)
-    print(f"🚀 Menjalankan {script_base_name} (Timeout: {args.timeout}s)...", file=sys.stderr)
+    # print(f"🚀 Menjalankan {script_base_name} (Timeout: {args.timeout}s)...", file=sys.stderr)
     
     try:
         # 3. Eksekusi Subprocess dengan Timeout

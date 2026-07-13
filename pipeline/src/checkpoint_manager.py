@@ -125,6 +125,13 @@ class CheckpointManager:
             # 5. Tangkap error, simpan di JSON, lalu beri sinyal EXIT 1 ke n8n
             print(f"[{stage_name}] GAGAL: {str(e)}", file=sys.stderr)
             self.update_stage(stage_name, "failed", error=str(e))
+            
+            # Update global status to failed
+            state_data = self._read_data()
+            if state_data:
+                state_data["global_status"] = "failed"
+                self._write_data(state_data)
+                
             sys.exit(1)
 
     # ==========================================

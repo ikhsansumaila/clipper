@@ -89,6 +89,9 @@ def director():
     except Exception as e:
         raise ValueError(f"json.loads from response error: {e}")
 
+    if response_data.get('error'):
+        raise ValueError(response_data.get('error'))
+    
     content = response_data['choices'][0]['message']['content']
     # Membersihkan markdown jika ada
     clean_json = content.replace('```json', '').replace('```', '').strip()

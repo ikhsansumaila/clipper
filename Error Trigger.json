@@ -1,0 +1,173 @@
+{
+  "name": "Error Trigger",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -512,
+        16
+      ],
+      "id": "ec6fd5f2-dc8c-4f22-8efc-5566a740fa5c",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "91af57a1-9aa1-452e-ba23-9a4b62fd0e02",
+              "leftValue": "{{ $execution.mode }}",
+              "rightValue": "test",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -336,
+        16
+      ],
+      "id": "1ecc3475-1259-476a-8965-c9c8fe4f19bd",
+      "name": "If testing mode"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "",
+          "cachedResultUrl": "https://discord.com/channels/"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "clipper-test",
+          "cachedResultUrl": "https://discord.com/channels/"
+        },
+        "content": "=Something's Error \nMessage : {{ $('Error Trigger').item.json.execution.error.message }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        -128,
+        -80
+      ],
+      "id": "fbdd06d9-eaf4-4aaf-978e-d98c1042a214",
+      "name": "Send message staging",
+      "webhookId": "f38dad8f-8220-4e0c-95c9-23457845699c",
+      "credentials": {
+        "discordBotApi": {
+          "id": "",
+          "name": "Discord Bot account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "",
+          "cachedResultUrl": "https://discord.com/channels/"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "clipper",
+          "cachedResultUrl": "https://discord.com/channels/"
+        },
+        "content": "=Something's Error \nMessage : {{ $('Error Trigger').item.json.execution.error.message }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        -128,
+        112
+      ],
+      "id": "5e74d84e-f4e8-4778-83ee-0db78d3bd72f",
+      "name": "Send message prod",
+      "webhookId": "f38dad8f-8220-4e0c-95c9-23457845699c",
+      "credentials": {
+        "discordBotApi": {
+          "id": "",
+          "name": "Discord Bot account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "If testing mode",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If testing mode": {
+      "main": [
+        [
+          {
+            "node": "Send message staging",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send message prod",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Bangkok",
+    "callerPolicy": "workflowsFromSameOwner",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true
+  },
+  "versionId": "6321a9bd-3f6b-441a-bfd3-9d3d688449e5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a3c2bfd93c2e2d41cda384d68ec5b960d371211309fa5996c744a480f07ddd54"
+  },
+  "nodeGroups": [],
+  "id": "3m0pDdhhzSzU2FkE",
+  "tags": []
+}

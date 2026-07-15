@@ -11,7 +11,7 @@
       "typeVersion": 2.1,
       "position": [
         -1152,
-        176
+        384
       ],
       "id": "3b989b5c-2fed-47c5-96c1-8d7c604e389c",
       "name": "Webhook",
@@ -54,7 +54,7 @@
       "typeVersion": 2.3,
       "position": [
         -960,
-        176
+        384
       ],
       "id": "b26b8aa9-1291-4bfd-ba3e-12ae075a9a96",
       "name": "Filter"
@@ -109,7 +109,7 @@
       "typeVersion": 2,
       "position": [
         -768,
-        176
+        384
       ],
       "id": "5f4f1588-8a50-4e2a-8453-5b9762bcc1ce",
       "name": "Get URL from message"
@@ -122,8 +122,8 @@
       "type": "n8n-nodes-base.ssh",
       "typeVersion": 1,
       "position": [
-        544,
-        160
+        -64,
+        -288
       ],
       "id": "a662ba9c-986a-404a-a2d0-2be66cc8de4b",
       "name": "Add Caption",
@@ -134,6 +134,7 @@
           "name": "SSH Password account"
         }
       },
+      "disabled": true,
       "onError": "continueErrorOutput"
     },
     {
@@ -164,7 +165,7 @@
       "typeVersion": 2.3,
       "position": [
         -368,
-        176
+        384
       ],
       "id": "50f559db-2094-4d5a-a66d-aabfe8a84970",
       "name": "is cached"
@@ -228,8 +229,8 @@
       "type": "n8n-nodes-base.ssh",
       "typeVersion": 1,
       "position": [
-        -16,
-        160
+        -624,
+        -288
       ],
       "id": "1009ac37-fc96-4810-b096-27867427a7b9",
       "name": "Transcript text (3rd Party)",
@@ -239,6 +240,7 @@
           "name": "SSH Password account"
         }
       },
+      "disabled": true,
       "onError": "continueErrorOutput"
     },
     {
@@ -248,14 +250,14 @@
           "__rl": true,
           "value": "1234567890123456789",
           "mode": "list",
-          "cachedResultName": "octavarium project",
+          "cachedResultName": "Dummy Discord Server",
           "cachedResultUrl": "https://discord.com/channels/1234567890123456789"
         },
         "channelId": {
           "__rl": true,
           "value": "9876543210987654321",
           "mode": "list",
-          "cachedResultName": "clipper",
+          "cachedResultName": "dummy-channel-1",
           "cachedResultUrl": "https://discord.com/channels/1234567890123456789/9876543210987654321"
         },
         "content": "\ud83c\udf89 SUKSES! Clip Video sudah selesai!\nsilakan buka : https://dummy.mihankids.my.id/results/",
@@ -267,8 +269,8 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        1024,
-        224
+        624,
+        448
       ],
       "id": "10de6a49-8730-4205-ba0a-0dca7319722a",
       "name": "Send Success",
@@ -287,14 +289,14 @@
           "__rl": true,
           "value": "1234567890123456789",
           "mode": "list",
-          "cachedResultName": "octavarium project",
+          "cachedResultName": "Dummy Discord Server",
           "cachedResultUrl": "https://discord.com/channels/1234567890123456789"
         },
         "channelId": {
           "__rl": true,
           "value": "1122334455667788990",
           "mode": "list",
-          "cachedResultName": "clipper-test",
+          "cachedResultName": "dummy-channel-2",
           "cachedResultUrl": "https://discord.com/channels/1234567890123456789/1122334455667788990"
         },
         "content": "\ud83c\udf89 SUKSES! Clip Video sudah selesai!\nsilakan buka : https://dummy.mihankids.my.id/results/",
@@ -303,8 +305,8 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        1024,
-        80
+        624,
+        304
       ],
       "id": "569530d1-1052-4b02-98f3-b5ac3016bcaf",
       "name": "Send Success Test",
@@ -325,11 +327,12 @@
       "type": "n8n-nodes-base.youTube",
       "typeVersion": 1,
       "position": [
-        1280,
-        144
+        192,
+        -288
       ],
       "id": "6cf83622-9eea-4378-b82b-ab09ec362ab8",
-      "name": "Upload a video"
+      "name": "Upload a video",
+      "disabled": true
     },
     {
       "parameters": {
@@ -338,7 +341,7 @@
           "__rl": true,
           "value": "1234567890123456789",
           "mode": "list",
-          "cachedResultName": "octavarium project",
+          "cachedResultName": "Dummy Discord Server",
           "cachedResultUrl": "https://discord.com/channels/1234567890123456789"
         },
         "channelId": {
@@ -352,8 +355,8 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        1040,
-        784
+        288,
+        1360
       ],
       "id": "a130ee88-6c4c-4003-9018-42b15a09e415",
       "name": "Send error",
@@ -372,14 +375,14 @@
           "__rl": true,
           "value": "1234567890123456789",
           "mode": "list",
-          "cachedResultName": "octavarium project",
+          "cachedResultName": "Dummy Discord Server",
           "cachedResultUrl": "https://discord.com/channels/1234567890123456789"
         },
         "channelId": {
           "__rl": true,
           "value": "1122334455667788990",
           "mode": "list",
-          "cachedResultName": "clipper-test",
+          "cachedResultName": "dummy-channel-2",
           "cachedResultUrl": "https://discord.com/channels/1234567890123456789/1122334455667788990"
         },
         "content": "={{ $json.stdout }}",
@@ -388,8 +391,8 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        1040,
-        640
+        288,
+        1216
       ],
       "id": "e59b588e-dd91-4713-9ecf-865ce7a07c46",
       "name": "Send error test",
@@ -403,81 +406,13 @@
     },
     {
       "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 3
-          },
-          "conditions": [
-            {
-              "id": "04537bcb-3488-4857-a260-1e25f33317ca",
-              "leftValue": "={{ $execution.mode }}",
-              "rightValue": "test",
-              "operator": {
-                "type": "string",
-                "operation": "equals",
-                "name": "filter.operator.equals"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        720,
-        720
-      ],
-      "id": "e90dedb8-e0e9-4200-960d-6fc5137042fd",
-      "name": "if error testing mode"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 3
-          },
-          "conditions": [
-            {
-              "id": "04537bcb-3488-4857-a260-1e25f33317ca",
-              "leftValue": "={{ $execution.mode }}",
-              "rightValue": "test",
-              "operator": {
-                "type": "string",
-                "operation": "equals",
-                "name": "filter.operator.equals"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        752,
-        160
-      ],
-      "id": "a33f1fda-548c-44cb-9687-26998339cc72",
-      "name": "if success testing mode"
-    },
-    {
-      "parameters": {
         "url": "={{ $('Get URL from message').item.json.url }}"
       },
       "type": "@videosailor/n8n-nodes-videosailor.videoSailor",
       "typeVersion": 1,
       "position": [
-        -960,
-        928
+        -752,
+        1264
       ],
       "id": "e6d686b7-68ee-46f6-9519-5049a72c50bb",
       "name": "Get url download from VideoSailor",
@@ -547,8 +482,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -752,
-        496
+        -544,
+        832
       ],
       "id": "305aa232-b7d6-46fe-b7c7-66961cf6ffe9",
       "name": "is url exist"
@@ -561,8 +496,8 @@
       "type": "n8n-nodes-base.ssh",
       "typeVersion": 1,
       "position": [
-        192,
-        160
+        -416,
+        -288
       ],
       "id": "9fc4a9c0-34b3-4cc4-b404-551fefff3dfa",
       "name": "Analyze by Director",
@@ -572,18 +507,19 @@
           "name": "SSH Password account"
         }
       },
+      "disabled": true,
       "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "command": "=docker exec clipper_pipeline python3 run.py download_file.py --original_url \"{{ $('Get URL from message').item.json.url }}\" --download_url \"{{ $json.downloadUrl }}\" --title \"{{ $('Get Video Title').item.json.title }}\" --timeout 1200",
+        "command": "=docker exec clipper_pipeline python3 run.py download_file.py --original_url \"{{ $('Get URL from message').item.json.url }}\" --download_url \"{{ $json.downloadUrl }}\" --title \"{{ $('Get video title').item.json.stdout }}\" --timeout 1200",
         "cwd": "/home/ubuntu/clipper/"
       },
       "type": "n8n-nodes-base.ssh",
       "typeVersion": 1,
       "position": [
-        -352,
-        688
+        -224,
+        1024
       ],
       "id": "f42853fa-2cbf-4c31-bece-613b73b36efc",
       "name": "Download",
@@ -602,7 +538,7 @@
           "parameters": [
             {
               "name": "url",
-              "value": "={{ $json.url }}"
+              "value": "={{ $('Get URL from message').item.json.url }}"
             }
           ]
         },
@@ -611,7 +547,7 @@
           "parameters": [
             {
               "name": "x-api-key",
-              "value": "sd_010859a0b0320f84f3eb76e05124a0ce"
+              "value": "sd_xxxxxxxxxxxxxxxxxxx"
             }
           ]
         },
@@ -620,11 +556,12 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        -1136,
-        496
+        256,
+        -528
       ],
       "id": "da3bfcfa-2694-40ad-a583-ea6f1545d82e",
-      "name": "Get Video Title"
+      "name": "Get Video Title",
+      "disabled": true
     },
     {
       "parameters": {
@@ -643,8 +580,8 @@
       "type": "@apify/n8n-nodes-apify.apify",
       "typeVersion": 1,
       "position": [
-        -960,
-        704
+        -752,
+        1040
       ],
       "id": "07853212-5a64-41a8-a419-6d94e1fb305e",
       "name": "Get download url (API KEY 2)",
@@ -666,13 +603,14 @@
           "value": "=G1dli5lUik9LaUH0N",
           "mode": "id"
         },
-        "customBody": "={\n  \"videoUrls\": [\n    \"{{ $('Get URL from message').item.json.url }}\"\n  ],\n  \"audioOnly\": false\n}"
+        "customBody": "={\n  \"videoUrls\": [\n    \"{{ $('Get URL from message').item.json.url }}\"\n  ],\n  \"audioOnly\": false\n}",
+        "timeout": {}
       },
       "type": "@apify/n8n-nodes-apify.apify",
       "typeVersion": 1,
       "position": [
-        -960,
-        496
+        -752,
+        832
       ],
       "id": "0b1456b2-d697-4cf7-bb08-8d6269ee9879",
       "name": "Get download url",
@@ -723,8 +661,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -752,
-        928
+        -544,
+        1264
       ],
       "id": "3303f9d5-01fb-42d4-9bba-36cc23b2b667",
       "name": "is url exist2"
@@ -787,8 +725,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -752,
-        704
+        -544,
+        1040
       ],
       "id": "138fa132-e286-4255-9c5e-e14462a2d2c5",
       "name": "is url exist3"
@@ -801,8 +739,8 @@
       "type": "n8n-nodes-base.ssh",
       "typeVersion": 1,
       "position": [
-        368,
-        160
+        -240,
+        -288
       ],
       "id": "ab7766a2-de79-4382-80c4-12478ab59142",
       "name": "Cut Video",
@@ -813,6 +751,7 @@
           "name": "SSH Password account"
         }
       },
+      "disabled": true,
       "onError": "continueErrorOutput"
     },
     {
@@ -824,7 +763,7 @@
       "typeVersion": 1,
       "position": [
         -560,
-        176
+        384
       ],
       "id": "c5ae6f64-27f2-47f8-bd14-b5ce627327fd",
       "name": "Check exist video",
@@ -834,6 +773,194 @@
           "name": "SSH Password account"
         }
       }
+    },
+    {
+      "parameters": {
+        "command": "=docker exec clipper_pipeline python3 run.py get_video_title.py \"{{ $('Get URL from message').item.json.url }}\"",
+        "cwd": "/home/ubuntu/clipper"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        -1104,
+        704
+      ],
+      "id": "0308d35c-0e12-4d9a-8c4c-9be9d562a3a3",
+      "name": "Get video title",
+      "alwaysOutputData": false,
+      "credentials": {
+        "sshPassword": {
+          "id": "dummy-ssh-password-id",
+          "name": "SSH Password account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "command": "=docker exec clipper_pipeline python3 run.py run_stage.py --stage \"2_transcribe\" --continue-step",
+        "cwd": "/home/ubuntu/clipper"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        384
+      ],
+      "id": "8e95c202-6e93-42a9-ae2e-bf486b50c2c2",
+      "name": "Clip Process",
+      "credentials": {
+        "sshPassword": {
+          "id": "dummy-ssh-password-id",
+          "name": "SSH Password account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "04537bcb-3488-4857-a260-1e25f33317ca",
+              "leftValue": "={{ $execution.mode }}",
+              "rightValue": "test",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        352,
+        384
+      ],
+      "id": "a33f1fda-548c-44cb-9687-26998339cc72",
+      "name": "check exec mode"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "55025389-79b2-4045-9e02-ab88887249e2",
+              "leftValue": "={{ $json.code }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        128,
+        384
+      ],
+      "id": "2626a0fd-0fa9-45be-a699-fe67517cea19",
+      "name": "is process success (code 0)"
+    },
+    {
+      "parameters": {
+        "errorMessage": "={{ $json.stderr }}"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        256,
+        688
+      ],
+      "id": "42e2ab1b-2827-46c1-8770-44390c9c977a",
+      "name": "Trigger Error"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "55025389-79b2-4045-9e02-ab88887249e2",
+              "leftValue": "={{ $json.code }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -912,
+        704
+      ],
+      "id": "f47684d3-a082-4154-8f48-c487177f3cea",
+      "name": "if error"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "04537bcb-3488-4857-a260-1e25f33317ca",
+              "leftValue": "={{ $execution.mode }}",
+              "rightValue": "test",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -32,
+        1296
+      ],
+      "id": "e90dedb8-e0e9-4200-960d-6fc5137042fd",
+      "name": "check error exec mode"
     }
   ],
   "pinData": {},
@@ -883,34 +1010,22 @@
     },
     "Add Caption": {
       "main": [
-        [
-          {
-            "node": "if success testing mode",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "if error testing mode",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        [],
+        []
       ]
     },
     "is cached": {
       "main": [
         [
           {
-            "node": "Transcript text (3rd Party)",
+            "node": "Clip Process",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Get Video Title",
+            "node": "Get video title",
             "type": "main",
             "index": 0
           }
@@ -937,54 +1052,12 @@
             "index": 0
           }
         ],
-        [
-          {
-            "node": "if error testing mode",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Send error": {
       "main": [
         []
-      ]
-    },
-    "if error testing mode": {
-      "main": [
-        [
-          {
-            "node": "Send error test",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Send error",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "if success testing mode": {
-      "main": [
-        [
-          {
-            "node": "Send Success Test",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Send Success",
-            "type": "main",
-            "index": 0
-          }
-        ]
       ]
     },
     "is url exist": {
@@ -1025,24 +1098,12 @@
             "index": 0
           }
         ],
-        [
-          {
-            "node": "if error testing mode",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Get Video Title": {
       "main": [
-        [
-          {
-            "node": "Get download url",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Get download url": {
@@ -1068,7 +1129,7 @@
         ],
         [
           {
-            "node": "if error testing mode",
+            "node": "check error exec mode",
             "type": "main",
             "index": 0
           }
@@ -1108,7 +1169,7 @@
       "main": [
         [
           {
-            "node": "Transcript text (3rd Party)",
+            "node": "Clip Process",
             "type": "main",
             "index": 0
           }
@@ -1124,13 +1185,7 @@
             "index": 0
           }
         ],
-        [
-          {
-            "node": "if error testing mode",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Check exist video": {
@@ -1138,6 +1193,100 @@
         [
           {
             "node": "is cached",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get video title": {
+      "main": [
+        [
+          {
+            "node": "if error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "check exec mode": {
+      "main": [
+        [
+          {
+            "node": "Send Success Test",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clip Process": {
+      "main": [
+        [
+          {
+            "node": "is process success (code 0)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "is process success (code 0)": {
+      "main": [
+        [
+          {
+            "node": "check exec mode",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Trigger Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "if error": {
+      "main": [
+        [
+          {
+            "node": "Trigger Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get download url",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "check error exec mode": {
+      "main": [
+        [
+          {
+            "node": "Send error test",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send error",
             "type": "main",
             "index": 0
           }
@@ -1155,7 +1304,7 @@
     "timezone": "Asia/Hong_Kong",
     "callerPolicy": "workflowsFromSameOwner"
   },
-  "versionId": "19575f2a-963d-47bf-a0f0-2bad3ba6b761",
+  "versionId": "a6d5b3c2-8b8b-4ce5-8e80-b24eea977882",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "a3c2bfd93c2e2d41cda384d68ec5b960d371211309fa5996c744a480f07ddd54"

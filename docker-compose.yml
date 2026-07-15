@@ -9,6 +9,8 @@ services:
       - .env
     volumes:
       - ./n8n_data:/home/node/.n8n
+    networks:
+      - nginx-proxy-manager-network
 
   discord-bridge:
     image: node:20-alpine
@@ -44,3 +46,9 @@ services:
       - ./data:/data:ro
     env_file:
       - .env
+    networks:
+      - nginx-proxy-manager-network
+
+networks:
+  nginx-proxy-manager-network:
+    external: true
